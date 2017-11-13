@@ -104,7 +104,7 @@ exception playerUnknownException {
 /**
  * API
  */
-service playerService {
+service PlayerService {
     bool ping()
         throws (1: playerUserException user_exception,
                 2: playerSystemException system_exception,
