@@ -1,0 +1,15 @@
+[
+    {
+        "Name": "player",
+        "AppID": "purchaseMeiTuan",
+        "ThriftFile": "player.thrift",
+        "Addr": ":8010",
+        "PoolOptions": {
+            "MaxCap": 100,
+            "MaxActive": 60,
+            "IdleTimeout": 1200,
+            "ConnectTimeout": 3000,
+            "RWTimeout": 3000
+        }
+    }
+]

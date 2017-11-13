@@ -1,0 +1,17 @@
+language: golang
+version: 1.8
+script:
+  - curl https://git.elenet.me/arch/nex-deploy/raw/master/start.sh | sh
+outfile:
+  - ./bin
+build_image:
+  imageOutBuildScript:
+    - curl https://git.elenet.me/arch/nex-deploy/raw/master/start.sh | sh
+  addToImageFile:
+    - ./bin
+  fromImage: docker.elenet.me/mirror/centos:7.3.1611-ele-edge-sam1220
+  dockerFileRun:
+    - sh ./dockerfile_run.sh
+notifications:
+  email:
+    - anonymous
