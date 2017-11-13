@@ -109,26 +109,37 @@ service playerService {
         throws (1: playerUserException user_exception,
                 2: playerSystemException system_exception,
                 3: playerUnknownException unknown_exception,)
-                /**
-                * Upload the map to player.
-                * The map is made of two-dimesional array of integer. The first dimension means row of the map. The second dimension means column of the map.
-                * For example, if N is the map size, position(0,0) means upper left corner, position(0,N) means the upper right corner.
-                * In the map array, 0 means empty field, 1 means barrier, 2 means woods, 3 means flag.
-                **/
-                void uploadMap(1:list<list<i32>> gamemap);
-                void uploadParamters(1:Args arguments);
-                /**
-                * Assign a list of tank id to the player.
-                * each player may have more than one tank, so the parameter is a list.
-                **/
-                void assignTanks(1:list<i32> tanks);
-                /**
-                * Report latest game state to player.
-                **/
-                void latestState(1:GameState state);
-                /**
-                * Ask for the tank orders for this round.
-                * If this funtion does not return orders within the given round timeout, game engine will make all this player's tank to stick around.
-                */
-                list<Order> getNewOrders();
+
+
+    /**
+    * Upload the map to player.
+    * The map is made of two-dimesional array of integer. The first dimension means row of the map. The second dimension means column of the map.
+    *
+    * For example, if N is the map size, position(0,0) means upper left corner, position(0,N) means the upper right corner.
+    * In the map array, 0 means empty field, 1 means barrier, 2 means woods, 3 means flag.
+    **/
+    void uploadMap(1:list<list<i32>> gamemap);
+
+
+    void uploadParamters(1:Args arguments);
+
+
+    /**
+    * Assign a list of tank id to the player.
+    * each player may have more than one tank, so the parameter is a list.
+    **/
+    void assignTanks(1:list<i32> tanks);
+
+
+    /**
+    * Report latest game state to player.
+    **/
+    void latestState(1:GameState state);
+
+
+    /**
+    * Ask for the tank orders for this round.
+    * If this funtion does not return orders within the given round timeout, game engine will make all this player's tank to stick around.
+    */
+    list<Order> getNewOrders();
 }

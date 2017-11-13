@@ -2152,6 +2152,7 @@ type PlayerService interface {  //API
   Ping(ctx context.Context) (r bool, err error)
   // Upload the map to player.
   // The map is made of two-dimesional array of integer. The first dimension means row of the map. The second dimension means column of the map.
+  // 
   // For example, if N is the map size, position(0,0) means upper left corner, position(0,N) means the upper right corner.
   // In the map array, 0 means empty field, 1 means barrier, 2 means woods, 3 means flag.
   // 
@@ -2308,6 +2309,7 @@ return
 
 // Upload the map to player.
 // The map is made of two-dimesional array of integer. The first dimension means row of the map. The second dimension means column of the map.
+// 
 // For example, if N is the map size, position(0,0) means upper left corner, position(0,N) means the upper right corner.
 // In the map array, 0 means empty field, 1 means barrier, 2 means woods, 3 means flag.
 // 
