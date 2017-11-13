@@ -14,7 +14,7 @@ func main() {
 	nex.Init()
 
 	ctx := context.Background()
-	client, err := player.GetThriftplayerServiceClient()
+	client, err := player.GetThriftPlayerServiceClient()
 	if err != nil {
 		panic(err)
 	}

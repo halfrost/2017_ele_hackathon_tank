@@ -138,190 +138,8 @@ func (p * PlayerErrorCode) Value() (driver.Value, error) {
   }
 return int64(*p), nil
 }
-//Types and Structures
-type Timestamp int64
-
-func TimestampPtr(v Timestamp) *Timestamp { return &v }
-
-// Attributes:
-//  - ID
-//  - Title
-//  - CreatedAt
-type TTodo struct {
-  ID int64 `thrift:"id,1,required" db:"id" json:"id"`
-  Title string `thrift:"title,2,required" db:"title" json:"title"`
-  CreatedAt Timestamp `thrift:"created_at,3,required" db:"created_at" json:"created_at"`
-}
-
-func NewTTodo() *TTodo {
-  return &TTodo{}
-}
-
-
-func (p *TTodo) GetID() int64 {
-  return p.ID
-}
-
-func (p *TTodo) GetTitle() string {
-  return p.Title
-}
-
-func (p *TTodo) GetCreatedAt() Timestamp {
-  return p.CreatedAt
-}
-func (p *TTodo) Read(iprot thrift.TProtocol) error {
-  if _, err := iprot.ReadStructBegin(); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T read error: ", p), err)
-  }
-
-  var issetID bool = false;
-  var issetTitle bool = false;
-  var issetCreatedAt bool = false;
-
-  for {
-    _, fieldTypeId, fieldId, err := iprot.ReadFieldBegin()
-    if err != nil {
-      return thrift.PrependError(fmt.Sprintf("%T field %d read error: ", p, fieldId), err)
-    }
-    if fieldTypeId == thrift.STOP { break; }
-    switch fieldId {
-    case 1:
-      if fieldTypeId == thrift.I64 {
-        if err := p.ReadField1(iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(fieldTypeId); err != nil {
-          return err
-        }
-      }
-      issetID = true
-    case 2:
-      if fieldTypeId == thrift.STRING {
-        if err := p.ReadField2(iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(fieldTypeId); err != nil {
-          return err
-        }
-      }
-      issetTitle = true
-    case 3:
-      if fieldTypeId == thrift.I64 {
-        if err := p.ReadField3(iprot); err != nil {
-          return err
-        }
-      } else {
-        if err := iprot.Skip(fieldTypeId); err != nil {
-          return err
-        }
-      }
-      issetCreatedAt = true
-    default:
-      if err := iprot.Skip(fieldTypeId); err != nil {
-        return err
-      }
-    }
-    if err := iprot.ReadFieldEnd(); err != nil {
-      return err
-    }
-  }
-  if err := iprot.ReadStructEnd(); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-  }
-  if !issetID{
-    return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("Required field ID is not set"));
-  }
-  if !issetTitle{
-    return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("Required field Title is not set"));
-  }
-  if !issetCreatedAt{
-    return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("Required field CreatedAt is not set"));
-  }
-  return nil
-}
-
-func (p *TTodo)  ReadField1(iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI64(); err != nil {
-  return thrift.PrependError("error reading field 1: ", err)
-} else {
-  p.ID = v
-}
-  return nil
-}
-
-func (p *TTodo)  ReadField2(iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadString(); err != nil {
-  return thrift.PrependError("error reading field 2: ", err)
-} else {
-  p.Title = v
-}
-  return nil
-}
-
-func (p *TTodo)  ReadField3(iprot thrift.TProtocol) error {
-  if v, err := iprot.ReadI64(); err != nil {
-  return thrift.PrependError("error reading field 3: ", err)
-} else {
-  temp := Timestamp(v)
-  p.CreatedAt = temp
-}
-  return nil
-}
-
-func (p *TTodo) Write(oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin("TTodo"); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
-  if p != nil {
-    if err := p.writeField1(oprot); err != nil { return err }
-    if err := p.writeField2(oprot); err != nil { return err }
-    if err := p.writeField3(oprot); err != nil { return err }
-  }
-  if err := oprot.WriteFieldStop(); err != nil {
-    return thrift.PrependError("write field stop error: ", err) }
-  if err := oprot.WriteStructEnd(); err != nil {
-    return thrift.PrependError("write struct stop error: ", err) }
-  return nil
-}
-
-func (p *TTodo) writeField1(oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin("id", thrift.I64, 1); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field begin error 1:id: ", p), err) }
-  if err := oprot.WriteI64(int64(p.ID)); err != nil {
-  return thrift.PrependError(fmt.Sprintf("%T.id (1) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field end error 1:id: ", p), err) }
-  return err
-}
-
-func (p *TTodo) writeField2(oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin("title", thrift.STRING, 2); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field begin error 2:title: ", p), err) }
-  if err := oprot.WriteString(string(p.Title)); err != nil {
-  return thrift.PrependError(fmt.Sprintf("%T.title (2) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field end error 2:title: ", p), err) }
-  return err
-}
-
-func (p *TTodo) writeField3(oprot thrift.TProtocol) (err error) {
-  if err := oprot.WriteFieldBegin("created_at", thrift.I64, 3); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field begin error 3:created_at: ", p), err) }
-  if err := oprot.WriteI64(int64(p.CreatedAt)); err != nil {
-  return thrift.PrependError(fmt.Sprintf("%T.created_at (3) field write error: ", p), err) }
-  if err := oprot.WriteFieldEnd(); err != nil {
-    return thrift.PrependError(fmt.Sprintf("%T write field end error 3:created_at: ", p), err) }
-  return err
-}
-
-func (p *TTodo) String() string {
-  if p == nil {
-    return "<nil>"
-  }
-  return fmt.Sprintf("TTodo(%+v)", *p)
-}
-
+// Types and Structures
+// 
 // Attributes:
 //  - X
 //  - Y
@@ -1720,7 +1538,7 @@ func (p *PlayerUserException)  ReadField3(iprot thrift.TProtocol) error {
 }
 
 func (p *PlayerUserException) Write(oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin("playerUserException"); err != nil {
+  if err := oprot.WriteStructBegin("PlayerUserException"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
     if err := p.writeField1(oprot); err != nil { return err }
@@ -1907,7 +1725,7 @@ func (p *PlayerSystemException)  ReadField3(iprot thrift.TProtocol) error {
 }
 
 func (p *PlayerSystemException) Write(oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin("playerSystemException"); err != nil {
+  if err := oprot.WriteStructBegin("PlayerSystemException"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
     if err := p.writeField1(oprot); err != nil { return err }
@@ -2092,7 +1910,7 @@ func (p *PlayerUnknownException)  ReadField3(iprot thrift.TProtocol) error {
 }
 
 func (p *PlayerUnknownException) Write(oprot thrift.TProtocol) error {
-  if err := oprot.WriteStructBegin("playerUnknownException"); err != nil {
+  if err := oprot.WriteStructBegin("PlayerUnknownException"); err != nil {
     return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err) }
   if p != nil {
     if err := p.writeField1(oprot); err != nil { return err }

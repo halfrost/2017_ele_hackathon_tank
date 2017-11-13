@@ -1,5 +1,5 @@
 app_name: purchaseMeiTuan
-service: player
+service: Player
 huskar:
   endpoint: http://soa-zk.alpha.elenet.me:8020
   token: get from huskar

@@ -1,0 +1,3 @@
+test: make test
+coverage: ">=last"
+coverprofile: "cover.out"

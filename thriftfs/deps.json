@@ -1,8 +1,8 @@
 [
     {
-        "Name": "player",
+        "Name": "Player",
         "AppID": "purchaseMeiTuan",
-        "ThriftFile": "player.thrift",
+        "ThriftFile": "Player.thrift",
         "Addr": ":8010",
         "PoolOptions": {
             "MaxCap": 100,

@@ -1,0 +1,4 @@
+test: make test
+coverage: ">50%"
+excludes:
+  - client/thrift/gen-go

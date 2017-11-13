@@ -2,13 +2,6 @@
 /**
  * Types and Structures
  */
-typedef i64 Timestamp
-
-struct TTodo {
-    1: required i64 id,
-    2: required string title,
-    3: required Timestamp created_at,
-}
 
 struct Position {
     1:i32 x,
@@ -77,26 +70,26 @@ struct Args {
 /**
  * Exceptions
  */
-enum playerErrorCode {
+enum PlayerErrorCode {
     UNKNOWN_ERROR = 0,
     DATABASE_ERROR = 1,
     TOO_BUSY_ERROR = 2,
 }
 
-exception playerUserException {
-   1: required playerErrorCode error_code,
+exception PlayerUserException {
+   1: required PlayerErrorCode error_code,
    2: required string error_name,
    3: optional string message,
 }
 
-exception playerSystemException {
-   1: required playerErrorCode error_code,
+exception PlayerSystemException {
+   1: required PlayerErrorCode error_code,
    2: required string error_name,
    3: optional string message,
 }
 
-exception playerUnknownException {
-   1: required playerErrorCode error_code,
+exception PlayerUnknownException {
+   1: required PlayerErrorCode error_code,
    2: required string error_name,
    3: required string message,
 }
@@ -106,9 +99,9 @@ exception playerUnknownException {
  */
 service PlayerService {
     bool ping()
-        throws (1: playerUserException user_exception,
-                2: playerSystemException system_exception,
-                3: playerUnknownException unknown_exception,)
+        throws (1: PlayerUserException user_exception,
+                2: PlayerSystemException system_exception,
+                3: PlayerUnknownException unknown_exception,)
 
 
     /**

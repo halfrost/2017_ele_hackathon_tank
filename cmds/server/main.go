@@ -8,6 +8,6 @@ import (
 
 func main() {
 	nex.Init()
-	processorFactory := handler.NewplayerServiceProcessorFactory()
+	processorFactory := handler.NewPlayerServiceProcessorFactory()
 	nex.Serve(processorFactory)
 }
