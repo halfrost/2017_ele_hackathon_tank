@@ -9,6 +9,7 @@ import (
 var gameArguments player.Args_
 var gameMap [30][30]int32
 var myTankList [5]int32
+var myTankTypeList [5]int32
 var enemyTankList [5]int32
 var gameState player.GameState
 
