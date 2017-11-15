@@ -12,6 +12,8 @@ var myTankList [5]int32
 var myTankTypeList [5]int32
 var enemyTankList [5]int32
 var gameState player.GameState
+var roundCount int32 = -1 // 回合数，初始值为 - 1
+var gameStates []*player.GameState
 
 // UploadParamters is a handler for thrift service.
 // 接收初始参数,把参数存储到本地
@@ -59,12 +61,16 @@ func AssignTanks(ctx context.Context, tanks []int32) error {
 // LatestState is a handler for thrift service.
 // 获取最新的状态
 func LatestState(ctx context.Context, state *player.GameState) error {
+	roundCount++
+	gameStates = make([]*player.GameState, 200)
 	gameState = player.GameState{}
 	gameState.Tanks = state.Tanks
 	gameState.Shells = state.Shells
 	gameState.YourFlagNo = state.YourFlagNo
 	gameState.EnemyFlagNo = state.EnemyFlagNo
 	gameState.FlagPos = state.FlagPos
+
+	gameStates[roundCount] = state
 	return nil
 }
 
