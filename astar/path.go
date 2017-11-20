@@ -177,10 +177,6 @@ func (w World) RenderPath(path []Pather) string {
 		pT := p.(*Tile)
 		pathLocs[fmt.Sprintf("%d,%d", pT.X, pT.Y)] = true
 	}
-	for k, v := range pathLocs {
-		fmt.Printf("pathLocs[%s] = [%v]", k, v)
-	}
-
 	rows := make([]string, height)
 	for x := 0; x < width; x++ {
 		for y := 0; y < height; y++ {
@@ -191,7 +187,9 @@ func (w World) RenderPath(path []Pather) string {
 			} else if t != nil {
 				r = KindRunes[t.Kind]
 			}
-			rows[y] += string(r)
+			rows[x] += string(r)
+			// 用二维数组初始化 rows[x] += string(r)
+			// 用字符初始化 rows[y] += string(r)
 		}
 	}
 	fmt.Printf("rows = %v", rows)
