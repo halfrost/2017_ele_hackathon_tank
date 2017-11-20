@@ -6,3 +6,4 @@ huskar:
 plugins:
   redis: false
   db: false
+addr: localhost:8080
