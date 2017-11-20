@@ -63,7 +63,7 @@ type Tile struct {
 	// Kind is the kind of tile, potentially affecting movement.
 	Kind int
 	// X and Y are the coordinates of the tile.
-	X, Y int
+	X, Y int32
 	// W is a reference to the World that the tile is a part of.
 	W World
 }
@@ -214,7 +214,7 @@ func ParseWorld(input string) World {
 }
 
 // InitWorld by gameMap
-func InitWorld(gameMap [5][5]int) World {
+func InitWorld(gameMap [30][30]int32) World {
 	w := World{}
 	var kind int
 	for i := 0; i < len(gameMap); i++ {

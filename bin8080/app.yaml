@@ -1,9 +1,0 @@
-app_name: purchaseMeiTuan
-service: Player
-huskar:
-  endpoint: http://soa-zk.alpha.elenet.me:8020
-  token: get from huskar
-plugins:
-  redis: false
-  db: false
-addr: localhost:8080

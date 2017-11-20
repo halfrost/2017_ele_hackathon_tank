@@ -1,6 +1,0 @@
-test: make test
-coverage: ">=last"
-coverprofile: "cover.out"
-excludes:
-    - tutorial/arch.calculator/services/
-build: make nex
