@@ -1,11 +1,11 @@
 build: server client
 server:
-	mkdir -p bin
-	go build -o 'bin/server' ./cmds/server
+	mkdir -p bin8080
+	go build -o 'bin8080/server' ./cmds/server
 
 client:
-	mkdir -p bin
-	go build -o 'bin/client' ./cmds/client
+	mkdir -p bin8080
+	go build -o 'bin8080/client' ./cmds/client
 
 dep:
 	godep save ./...
