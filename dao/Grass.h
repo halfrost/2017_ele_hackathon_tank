@@ -1,41 +1,54 @@
+#include <string>
+
+using namespace std;
+
 namespace grass {
 
   class Position {
-  private:
+  public:
     int xPos;
     int yPos;
 
-  public:
+    Position();
     Position(int x, int y);
   };
 
   class Range {
-  private:
-    Position start;
-    Position end;
-
   public:
-    Range(int s, int e);
+    Position *start;
+    Position *end;
+
+    Range(Position *s, Position *e);
   };
 
-  class Route {
-  private:
+  enum Direction {
+      UP = 1,
+      DOWN = 2,
+      LEFT = 3,
+      RIGHT = 4
+  };
+
+  class Tank {
+  public:
+    int tankdId;
+    Position *position;
+    Direction direction;
+    int hp;
+
+    Tank(int id, Position *pos, Direction dir, int h);
+  };
+
+  class Order {
+  public:
     int tankId;
-    Position grassPosition;
-    int step;
-    Position next;
-  public:
-  };
+    string order;
+    Direction direction;
 
-
-  class Grass {
-
+    Order(int tankdId, string ord, Direction dir);
   };
 
   class GrassService {
   public:
-    Order* findNearbyGrass(Range *range) {
-
-    }
+    Order *gotoTheNearestGrass(Tank *tank, Range *range, int **gameMap);
   };
 }
