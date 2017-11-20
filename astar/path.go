@@ -13,8 +13,8 @@ import (
 const (
 	// KindPlain (.) is a plain tile with a movement cost of 1.
 	KindPlain = iota
-	// KindRiver (~) is a river tile with a movement cost of 2.
-	KindRiver
+	// KindGrass (~) is a river tile with a movement cost of 2.
+	KindGrass
 	// KindMountain (M) is a mountain tile with a movement cost of 3.
 	KindMountain
 	// KindBlocker (X) is a tile which blocks movement.
@@ -31,7 +31,7 @@ const (
 // KindRunes map tile kinds to output runes.
 var KindRunes = map[int]rune{
 	KindPlain:    '.',
-	KindRiver:    '~',
+	KindGrass:    '~',
 	KindMountain: 'M',
 	KindBlocker:  'X',
 	KindFrom:     'F',
@@ -42,7 +42,7 @@ var KindRunes = map[int]rune{
 // RuneKinds map input runes to tile kinds.
 var RuneKinds = map[rune]int{
 	'.': KindPlain,
-	'~': KindRiver,
+	'~': KindGrass,
 	'M': KindMountain,
 	'X': KindBlocker,
 	'F': KindFrom,
@@ -54,7 +54,7 @@ var KindCosts = map[int]float64{
 	KindPlain:    1.0,
 	KindFrom:     1.0,
 	KindTo:       1.0,
-	KindRiver:    2.0,
+	KindGrass:    2.0,
 	KindMountain: 3.0,
 }
 
@@ -177,6 +177,10 @@ func (w World) RenderPath(path []Pather) string {
 		pT := p.(*Tile)
 		pathLocs[fmt.Sprintf("%d,%d", pT.X, pT.Y)] = true
 	}
+	for k, v := range pathLocs {
+		fmt.Printf("pathLocs[%s] = [%v]", k, v)
+	}
+
 	rows := make([]string, height)
 	for x := 0; x < width; x++ {
 		for y := 0; y < height; y++ {
@@ -190,6 +194,7 @@ func (w World) RenderPath(path []Pather) string {
 			rows[y] += string(r)
 		}
 	}
+	fmt.Printf("rows = %v", rows)
 	return strings.Join(rows, "\n")
 }
 
@@ -210,11 +215,34 @@ func ParseWorld(input string) World {
 	return w
 }
 
+// InitWorld by gameMap
+func InitWorld(gameMap [5][5]int) World {
+	w := World{}
+	var kind int
+	for i := 0; i < len(gameMap); i++ {
+		for j := 0; j < len(gameMap[i]); j++ {
+			if gameMap[i][j] == 0 {
+				kind = KindPlain
+			} else if gameMap[i][j] == 1 {
+				kind = KindBlocker
+			} else if gameMap[i][j] == 2 {
+				kind = KindGrass
+			} else {
+				kind = KindBlocker
+			}
+			w.SetTile(&Tile{
+				Kind: kind,
+			}, i, j)
+		}
+	}
+	return w
+}
+
 // PrintfWorld PrintfWorld
 func (w World) PrintfWorld() {
 	for i := 0; i < len(w); i++ {
 		for j := 0; j < len(w[i]); j++ {
-			fmt.Printf("world[%d][%d] = |kind = %d|x = %d|y = %d|\n", i, j, w[i][j].Kind, w[i][j].X, w[i][j].Y)
+			fmt.Printf("\nworld[%d][%d] = |kind = %d|x = %d|y = %d|\n", i, j, w[i][j].Kind, w[i][j].X, w[i][j].Y)
 		}
 	}
 }
