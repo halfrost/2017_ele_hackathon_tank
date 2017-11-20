@@ -147,9 +147,22 @@ func (w World) From() *Tile {
 	return w.FirstOfKind(KindFrom)
 }
 
+// Start gets the start tile from the world.
+func (w World) Start(x, y int) *Tile {
+	w.SetTile(&Tile{Kind: KindFrom}, x, y)
+	return w[x][y]
+}
+
 // To gets the to tile from the world.
 func (w World) To() *Tile {
 	return w.FirstOfKind(KindTo)
+}
+
+// End gets the start tile from the world.
+func (w World) End(x, y int) *Tile {
+	// return &Tile{Kind: KindTo, X: x, Y: y, W: w}
+	w.SetTile(&Tile{Kind: KindTo}, x, y)
+	return w[x][y]
 }
 
 // RenderPath renders a path on top of a world.
@@ -199,9 +212,9 @@ func ParseWorld(input string) World {
 
 // PrintfWorld PrintfWorld
 func (w World) PrintfWorld() {
-	// for i := 0; i < len(w); i++ {
-	// 	for j := 0; j < len(w[i]); j++ {
-	// 		fmt.Printf("world[%d][%d] = %v\n", i, j, w[i][j])
-	// 	}
-	// }
+	for i := 0; i < len(w); i++ {
+		for j := 0; j < len(w[i]); j++ {
+			fmt.Printf("world[%d][%d] = |kind = %d|x = %d|y = %d|\n", i, j, w[i][j].Kind, w[i][j].X, w[i][j].Y)
+		}
+	}
 }
