@@ -65,8 +65,8 @@ namespace grass {
   class GrassService {
   public:
     Order *gotoTheNearestGrass(Tank *tank, Range *range, int **gameMap);
-    Order *gotoTheGrassNearbyTheFlag(Tank *tank, int **gameMap);
-    Position *findTheGrassNearbyTheFlag(int **gameMap);
+    Order *gotoTheGrassNearbyTheFlag(Tank *tank, int **gameMap, Position *flagPos);
+    Position *findTheGrassNearbyTheFlag(int **gameMap, Position *flagPos);
     Route *route(Position *tankPos, Position *grassPos, int **gameMap);
   };
 }
