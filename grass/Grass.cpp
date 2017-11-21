@@ -38,12 +38,12 @@ namespace grass {
   }
 
   int RandomUtil::random(int from, int to) {
-    srand((unsigned)time(NULL));
-    return from + rand() % (to + from - 1);
+    return from + rand() % (to - from + 1);
   }
 
   Route *GrassService::route(Position *tankPos, Position *grassPos, int **gameMap) {
     int distance = RandomUtil::random(20, 40);
+    cout << "distance :" << distance << endl;
     Position *position = new Position(RandomUtil::random(tankPos->xPos-1, tankPos->xPos+1), RandomUtil::random(tankPos->yPos-1, tankPos->yPos+1));
     list<Position *> positions;
     positions.push_front(position);
@@ -58,6 +58,7 @@ namespace grass {
     for (int i = range->start->xPos; i < range->end->xPos; i++) {
       for (int j = range->start->yPos; j < range->end->yPos; j++) {
         if (gameMap[i][j] == 2) { // 如果是草丛
+          cout << "here" << endl;
           Position *grassPos = new Position(i, j);
           Route *route = this->route(tank->position, grassPos, gameMap);
           if (route->length < curRoute->length) {
@@ -76,10 +77,15 @@ using namespace grass;
 int main() {
   cout << "Test Grass Begin" << endl;
 
+  srand((unsigned)time(NULL));
+
   int **gameMap;
   gameMap = new int *[30];
   for(int i = 0; i < 30; i++) {
     gameMap[i] = new int[30];
+    for (int j = 0; j < 30; j++) {
+      gameMap[i][j] = 2;
+    }
   }
 
   GrassService *service = new GrassService();
@@ -92,8 +98,8 @@ int main() {
   Order *order = service->gotoTheNearestGrass(tank, range, gameMap);
 
   cout << "tankId: " << order->tankId
-  << " current: " << order->current
-  << " next: " << order->next
+  << " current: " << order->current->xPos << ", " << order->current->yPos
+  << " next: " << order->next->xPos << ", " << order->next->yPos
   << endl;
 
   cout << "Test Grass End" << endl;
