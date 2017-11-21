@@ -94,12 +94,12 @@ func (p *PlayerService) LatestState(state *player.GameState) error {
 func (p *PlayerService) GetNewOrders() ([]*player.Order, error) {
 	orders := []*player.Order{}
 	if roundCount%4 == 0 {
-		order := &player.Order{TankId: myTankTypeList[(rand.Int31n(4))], Order: "fire", Dir: player.Direction_DOWN}
+		order := &player.Order{TankId: myTankList[rand.Intn(len(gameState.Tanks))], Order: "fire", Dir: player.Direction_DOWN}
 		orders = append(orders, order)
 		return orders, nil
 	}
-	selectTank := gameState.Tanks[myTankTypeList[(rand.Int31n(4))]]
-	order := moveOrder(selectTank.Pos, &player.Position{X: (int32)(gameMapWidth), Y: (int32)(gameMapWidth)}, myTankTypeList[(rand.Int31n(4))], selectTank.Dir)
+	selectTank := gameState.Tanks[rand.Intn(len(gameState.Tanks))]
+	order := moveOrder(selectTank.Pos, &player.Position{X: (int32)(gameMapWidth), Y: (int32)(gameMapWidth)}, myTankList[(rand.Int31n(4))], selectTank.Dir)
 	orders = append(orders, order)
 	return orders, nil
 }
@@ -158,10 +158,10 @@ func main() {
 	if err != nil {
 		log.Fatalln("Error:", err)
 	}
-	transportFactory := thrift.NewTFramedTransportFactory(thrift.NewTTransportFactory())
-	protocolFactory := thrift.NewTBinaryProtocolFactoryDefault()
+	// transportFactory := thrift.NewTFramedTransportFactory(thrift.NewTTransportFactory())
+	// protocolFactory := thrift.NewTBinaryProtocolFactoryDefault()
 
-	server := thrift.NewTSimpleServer4(processor, serverTransport, transportFactory, protocolFactory)
+	server := thrift.NewTSimpleServer2(processor, serverTransport)
 	fmt.Println("Running at:", HOST+":"+PORT)
 	server.Serve()
 }
