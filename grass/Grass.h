@@ -44,8 +44,9 @@ namespace grass {
     int tankId;
     Position *current;
     Position *next;
+    Position *destination; // 目标坐标（旗子／草丛）
 
-    Order(int id, Position *cur, Position *nex);
+    Order(int id, Position *cur, Position *nex, Position *dest);
   };
 
   class Route {
@@ -64,6 +65,8 @@ namespace grass {
   class GrassService {
   public:
     Order *gotoTheNearestGrass(Tank *tank, Range *range, int **gameMap);
+    Order *gotoTheGrassNearbyTheFlag(Tank *tank, int **gameMap);
+    Position *findTheGrassNearbyTheFlag(int **gameMap);
     Route *route(Position *tankPos, Position *grassPos, int **gameMap);
   };
 }
