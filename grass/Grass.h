@@ -1,4 +1,5 @@
 #include <string>
+#include <list>
 
 using namespace std;
 
@@ -41,14 +42,28 @@ namespace grass {
   class Order {
   public:
     int tankId;
-    string order;
-    Direction direction;
+    Position *current;
+    Position *next;
 
-    Order(int tankdId, string ord, Direction dir);
+    Order(int id, Position *cur, Position *nex);
+  };
+
+  class Route {
+  public:
+    int length;
+    list<Position *> positions;
+
+    Route(int len, list<Position *> pos);
+  };
+
+  class RandomUtil {
+  public:
+    static int random(int from, int to);
   };
 
   class GrassService {
   public:
     Order *gotoTheNearestGrass(Tank *tank, Range *range, int **gameMap);
+    Route *route(Position *tankPos, Position *grassPos, int **gameMap);
   };
 }

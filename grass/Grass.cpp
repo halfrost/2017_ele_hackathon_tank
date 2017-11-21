@@ -1,4 +1,7 @@
 #include "Grass.h"
+#include <stdlib.h>
+#include <time.h>
+
 #include <iostream>
 
 using namespace std;
@@ -23,15 +26,47 @@ namespace grass {
     hp = h;
   }
 
-  Order::Order(int id, string ord, Direction dir) {
+  Order::Order(int id, Position *cur, Position *nex) {
     tankId = id;
-    order = ord;
-    direction = dir;
+    current = cur;
+    next = nex;
+  }
+
+  Route::Route(int len, list<Position *> pos) {
+    length = len;
+    positions = pos;
+  }
+
+  int RandomUtil::random(int from, int to) {
+    srand((unsigned)time(NULL));
+    return from + rand() % (to + from - 1);
+  }
+
+  Route *GrassService::route(Position *tankPos, Position *grassPos, int **gameMap) {
+    int distance = RandomUtil::random(20, 40);
+    Position *position = new Position(RandomUtil::random(tankPos->xPos-1, tankPos->xPos+1), RandomUtil::random(tankPos->yPos-1, tankPos->yPos+1));
+    list<Position *> positions;
+    positions.push_front(position);
+
+    Route *route = new Route(distance, positions);
+    return route;
   }
 
   Order *GrassService::gotoTheNearestGrass(Tank *tank, Range *range, int** gameMap) {
-    string operation = "move";
-    Order *order = new Order(tank->tankdId, operation, tank->direction);
+    list<Position *> positions;
+    Route *curRoute = new Route(INT_MAX, positions);
+    for (int i = range->start->xPos; i < range->end->xPos; i++) {
+      for (int j = range->start->yPos; j < range->end->yPos; j++) {
+        if (gameMap[i][j] == 2) { // 如果是草丛
+          Position *grassPos = new Position(i, j);
+          Route *route = this->route(tank->position, grassPos, gameMap);
+          if (route->length < curRoute->length) {
+            curRoute = route;
+          }
+        }
+      }
+    }
+    Order *order = new Order(tank->tankdId, tank->position, curRoute->positions.front());
     return order;
   }
 }
@@ -43,7 +78,7 @@ int main() {
 
   int **gameMap;
   gameMap = new int *[30];
-  for(int i = 0; i <30; i++) {
+  for(int i = 0; i < 30; i++) {
     gameMap[i] = new int[30];
   }
 
@@ -57,8 +92,8 @@ int main() {
   Order *order = service->gotoTheNearestGrass(tank, range, gameMap);
 
   cout << "tankId: " << order->tankId
-  << " order: " << order->order
-  << " direction: " << order->direction
+  << " current: " << order->current
+  << " next: " << order->next
   << endl;
 
   cout << "Test Grass End" << endl;
