@@ -147,7 +147,7 @@ const (
 	// HOST host
 	HOST = "localhost"
 	// PORT post
-	PORT = "8080"
+	PORT = "80"
 )
 
 func main() {
@@ -158,10 +158,10 @@ func main() {
 	if err != nil {
 		log.Fatalln("Error:", err)
 	}
-	transportFactory := thrift.NewTFramedTransportFactory(thrift.NewTTransportFactory())
-	protocolFactory := thrift.NewTBinaryProtocolFactoryDefault()
+	// transportFactory := thrift.NewTFramedTransportFactory(thrift.NewTTransportFactory())
+	// protocolFactory := thrift.NewTBinaryProtocolFactoryDefault()
 
-	server := thrift.NewTSimpleServer4(processor, serverTransport, transportFactory, protocolFactory)
+	server := thrift.NewTSimpleServer2(processor, serverTransport)
 	fmt.Println("Running at:", HOST+":"+PORT)
 	server.Serve()
 }
