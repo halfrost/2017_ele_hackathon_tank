@@ -4,17 +4,24 @@ import (
 	"astar"
 	"fmt"
 	"log"
-	"math/rand"
 
 	"github.com/eleme/purchaseMeiTuan/player"
 
 	"git.apache.org/thrift.git/lib/go/thrift"
 )
 
+const (
+	// HOST host
+	HOST = "localhost"
+	// PORT post
+	PORT = "8081"
+)
+
 var gameArguments player.Args_
 var gameMap [30][30]int32
 var myTankList [5]int32
 var myTankTypeList [5]int32
+var myTankNum int
 var enemyTankList [5]int32
 var gameState player.GameState
 var roundCount int32 = -1 // 回合数，初始值为 - 1
@@ -52,7 +59,7 @@ func (p *PlayerService) UploadMap(gamemap [][]int32) error {
 		}
 	}
 
-	gameMapWidth = len(gameMap)/2 + 1
+	gameMapWidth = len(gamemap) / 2
 	for i := 0; i < len(gamemap); i++ {
 		for j := 0; j < len(gamemap[i]); j++ {
 			gameMap[i][j] = gamemap[i][j]
@@ -67,6 +74,7 @@ func (p *PlayerService) AssignTanks(tanks []int32) error {
 	for i := 0; i < 5; i++ {
 		myTankList[i] = -1
 	}
+	myTankNum = len(tanks)
 	for i := 0; i < len(tanks); i++ {
 		myTankList[i] = tanks[i]
 	}
@@ -92,31 +100,71 @@ func (p *PlayerService) LatestState(state *player.GameState) error {
 // GetNewOrders is a handler for thrift service.
 // 给己方坦克下达指令
 func (p *PlayerService) GetNewOrders() ([]*player.Order, error) {
+	refeshTankState()
 	orders := []*player.Order{}
-	if roundCount%4 == 0 {
-		order := &player.Order{TankId: myTankList[rand.Intn(len(gameState.Tanks))], Order: "fire", Dir: player.Direction_DOWN}
+	fmt.Printf("第 %d 回合 | gameState = %v\n", roundCount, gameState)
+	for i := 0; i < myTankNum; i++ {
+		pos, dir, _ := getTankPosDirHp(myTankList[i])
+		if roundCount%4 == 0 && pos.X > 10 && pos.Y > 10 {
+			order := &player.Order{TankId: myTankList[i], Order: "fire", Dir: player.Direction_DOWN}
+			orders = append(orders, order)
+			fmt.Printf("第 %d 回合 | 【8080】玩家指令 = %v\n", roundCount, orders)
+			return orders, nil
+		}
+
+		order := moveOrder(pos, &player.Position{X: (int32)(gameMapWidth), Y: (int32)(gameMapWidth)}, myTankList[i], dir)
 		orders = append(orders, order)
-		return orders, nil
+		fmt.Printf("第 %d 回合 | 【8080】玩家指令 = %v order = %v\n", roundCount, orders, order)
 	}
-	selectTank := gameState.Tanks[rand.Intn(len(gameState.Tanks))]
-	order := moveOrder(selectTank.Pos, &player.Position{X: (int32)(gameMapWidth), Y: (int32)(gameMapWidth)}, myTankList[(rand.Int31n(4))], selectTank.Dir)
-	orders = append(orders, order)
 	return orders, nil
 }
 
+func getTankPosDirHp(tankID int32) (pos *player.Position, dir player.Direction, hp int32) {
+	for i := 0; i < len(gameState.Tanks); i++ {
+		if gameState.Tanks[i].ID == tankID {
+			return gameState.Tanks[i].Pos, gameState.Tanks[i].Dir, gameState.Tanks[i].Hp
+		}
+	}
+	return &player.Position{X: 0, Y: 0}, 0, 0
+}
+
+// refeshTankState 刷新己方坦克 list 数组，并且刷新己方 myTankNum
+func refeshTankState() {
+	isExist := false
+	for i := 0; i < len(myTankList); i++ {
+		for j := 0; j < len(gameState.Tanks); j++ {
+			if myTankList[i] == gameState.Tanks[j].ID {
+				isExist = true
+			}
+		}
+		if isExist == false {
+			myTankNum--
+			for k := i; k < len(myTankList)-1; k++ {
+				myTankList[k] = myTankList[k+1]
+			}
+		}
+	}
+}
 func moveOrder(tankPos, desPos *player.Position, tankID int32, tankDir player.Direction) (order *player.Order) {
+	for i := 0; i < len(gameState.Tanks); i++ {
+		if tankID != gameState.Tanks[i].ID {
+			gameMap[gameState.Tanks[i].Pos.X][gameState.Tanks[i].Pos.Y] = 1
+		}
+	}
 	world := astar.InitWorld(gameMap)
 	p, _, found := astar.Path(world.Start((int)(tankPos.X), (int)(tankPos.Y)), world.End((int)(desPos.X), (int)(desPos.Y)))
 	if !found {
 		return &player.Order{TankId: tankID, Order: "fire", Dir: tankDir}
 	}
 	pT := p[0].(*astar.Tile)
+	fmt.Print("Resulting path = \n", world.RenderPath(p))
 	var nextStep *astar.Tile
 	if (((int32)(pT.X)) == tankPos.X) && (((int32)(pT.Y)) == tankPos.Y) {
 		nextStep = p[1].(*astar.Tile)
 	} else {
 		nextStep = p[len(p)-2].(*astar.Tile)
 	}
+	fmt.Printf("nextStep = %v | X = %d | Y = %d\n", nextStep.Kind, nextStep.X, nextStep.Y)
 	isEqual, dir := getDir(tankPos, nextStep)
 	if isEqual == true {
 		return &player.Order{TankId: tankID, Order: "move", Dir: dir}
@@ -142,13 +190,6 @@ func getDir(tankPos *player.Position, nextStep *astar.Tile) (isEqual bool, dir p
 	}
 	return isEqual, dir
 }
-
-const (
-	// HOST host
-	HOST = "localhost"
-	// PORT post
-	PORT = "8081"
-)
 
 func main() {
 
