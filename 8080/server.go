@@ -4,6 +4,7 @@ import (
 	"astar"
 	"fmt"
 	"log"
+	"math/rand"
 
 	"github.com/eleme/purchaseMeiTuan/player"
 
@@ -29,6 +30,7 @@ var gameState player.GameState
 var roundCount int32 = -1 // 回合数，初始值为 - 1
 var gameStates []*player.GameState
 var gameMapCenter int
+var gameMapDiagonally int
 var gameMapWidth int
 
 // PlayerService struct
@@ -110,6 +112,7 @@ func (p *PlayerService) GetNewOrders() ([]*player.Order, error) {
 	//fmt.Printf("第 %d 回合 | gameState = %v\n", roundCount, gameState)
 
 	fmt.Printf("myTankNum = %d\n", myTankNum)
+
 	nextSteps = make([]*player.Position, 0)
 	for i := 0; i < myTankNum; i++ {
 		pos, dir, _ := getTankPosDirHp(myTankList[i])
@@ -126,10 +129,20 @@ func (p *PlayerService) GetNewOrders() ([]*player.Order, error) {
 		// 	orders = append(orders, order)
 		// 	fmt.Printf("第 %d 回合 | 【8081】玩家攻击指令 = %v\n", roundCount, orders)
 		// }
+		// 取余为 0 的坦克
+		if myTankList[i]%2 == 0 {
+			if (int)(pos.X) == gameMapCenter && (int)(pos.Y) == gameMapCenter {
+				order := moveOrder(pos, &player.Position{X: (int32)(gameMapCenter) + (int32)(rand.Intn(3)), Y: (int32)(gameMapCenter) + (int32)(rand.Intn(3))}, myTankList[i], dir)
+				orders = append(orders, order)
+			} else {
+				order := moveOrder(pos, &player.Position{X: (int32)(gameMapCenter), Y: (int32)(gameMapCenter)}, myTankList[i], dir)
+				orders = append(orders, order)
+			}
+		} else { // 取余为 1 的坦克
 
-		order := moveOrder(pos, &player.Position{X: (int32)(gameMapCenter), Y: (int32)(gameMapCenter)}, myTankList[i], dir)
-		orders = append(orders, order)
-
+			order := moveOrder(pos, &player.Position{X: (int32)(gameMapCenter) + (int32)(rand.Intn(gameMapWidth)), Y: (int32)(gameMapCenter) + (int32)(rand.Intn(gameMapWidth))}, myTankList[i], dir)
+			orders = append(orders, order)
+		}
 	}
 	fmt.Printf("第 %d 回合 | 【8081】玩家移动指令 = %v \n", roundCount, orders)
 	return orders, nil
@@ -176,6 +189,41 @@ func refeshAStarMap() {
 	}
 	for i := 0; i < len(gameState.Tanks); i++ {
 		astarGameMap[gameState.Tanks[i].Pos.X][gameState.Tanks[i].Pos.Y] = 1
+	}
+	for i := 0; i < len(gameState.Shells); i++ {
+
+		astarGameMap[gameState.Shells[i].Pos.X][gameState.Shells[i].Pos.Y] = 1
+
+		switch gameState.Shells[i].Dir {
+		case player.Direction_UP:
+			{
+				for j := 1; j <= (int)(gameArguments.ShellSpeed); j++ {
+					astarGameMap[gameState.Shells[i].Pos.X][(int)(gameState.Shells[i].Pos.Y)-j] = 1
+				}
+			}
+
+		case player.Direction_DOWN:
+			{
+				for j := 1; j <= (int)(gameArguments.ShellSpeed); j++ {
+					astarGameMap[gameState.Shells[i].Pos.X][(int)(gameState.Shells[i].Pos.Y)+j] = 1
+				}
+			}
+
+		case player.Direction_LEFT:
+			{
+				for j := 1; j <= (int)(gameArguments.ShellSpeed); j++ {
+					astarGameMap[(int)(gameState.Shells[i].Pos.X)-j][(int)(gameState.Shells[i].Pos.Y)] = 1
+				}
+			}
+
+		case player.Direction_RIGHT:
+			{
+				for j := 1; j <= (int)(gameArguments.ShellSpeed); j++ {
+					astarGameMap[(int)(gameState.Shells[i].Pos.X)+j][(int)(gameState.Shells[i].Pos.Y)] = 1
+				}
+			}
+		}
+
 	}
 }
 
