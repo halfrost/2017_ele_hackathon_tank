@@ -28,6 +28,7 @@ var enemyTankList [5]int32
 var gameState player.GameState
 var roundCount int32 = -1 // 回合数，初始值为 - 1
 var gameStates []*player.GameState
+var gameMapCenter int
 var gameMapWidth int
 
 // PlayerService struct
@@ -61,6 +62,7 @@ func (p *PlayerService) UploadMap(gamemap [][]int32) error {
 		}
 	}
 
+	gameMapCenter = len(gamemap) / 2
 	gameMapWidth = len(gamemap) / 2
 	for i := 0; i < len(gamemap); i++ {
 		for j := 0; j < len(gamemap[i]); j++ {
@@ -106,17 +108,26 @@ func (p *PlayerService) GetNewOrders() ([]*player.Order, error) {
 	refeshTankState()
 	orders := []*player.Order{}
 	//fmt.Printf("第 %d 回合 | gameState = %v\n", roundCount, gameState)
+
 	fmt.Printf("myTankNum = %d\n", myTankNum)
 	nextSteps = make([]*player.Position, 0)
 	for i := 0; i < myTankNum; i++ {
 		pos, dir, _ := getTankPosDirHp(myTankList[i])
+		if (roundCount%4 == 0) && (pos.X > 8) && (pos.Y > 8) {
+			enemyTankPos, myTankPos := getTankListFromGameState()
+			fireDir := shot((int)(pos.X), (int)(pos.Y), gameMapWidth, gameMapWidth, enemyTankPos, myTankPos, &player.Position{X: 0, Y: 0})
+			order := &player.Order{TankId: myTankList[i], Order: "fire", Dir: fireDir}
+			orders = append(orders, order)
+			return orders, nil
+		}
+
 		// if roundCount%4 == 0 && pos.X > 10 && pos.Y > 10 {
 		// 	order := &player.Order{TankId: myTankList[i], Order: "fire", Dir: player.Direction_DOWN}
 		// 	orders = append(orders, order)
 		// 	fmt.Printf("第 %d 回合 | 【8081】玩家攻击指令 = %v\n", roundCount, orders)
 		// }
 
-		order := moveOrder(pos, &player.Position{X: (int32)(gameMapWidth), Y: (int32)(gameMapWidth)}, myTankList[i], dir)
+		order := moveOrder(pos, &player.Position{X: (int32)(gameMapCenter), Y: (int32)(gameMapCenter)}, myTankList[i], dir)
 		orders = append(orders, order)
 
 	}
@@ -227,6 +238,96 @@ func getDir(tankPos *player.Position, nextStep *astar.Tile, tankDir player.Direc
 	}
 
 	return tankDir == dir, dir
+}
+
+func getTankListFromGameState() (enemyTankPos, myTankPos []*player.Position) {
+	for i := 0; i < myTankNum; i++ {
+		for j := 0; j < len(gameState.Tanks); j++ {
+			if gameState.Tanks[j].ID == myTankList[i] {
+				myTankPos = append(myTankPos, gameState.Tanks[j].Pos)
+			} else {
+				enemyTankPos = append(enemyTankPos, gameState.Tanks[j].Pos)
+			}
+		}
+	}
+	return enemyTankPos, myTankPos
+}
+
+// 0-1-2-3
+// 上下左右查找
+// 1. 若有敌方坦克，距离每增加一格减少 1，初始 10；若无则 0；
+// 2. 若有己方坦克，距离每增加一格增加 1，初始为 -10；若无则 0；
+// 3. 若有目标草丛，距离每增加一格减少 0.5，初始 5；若无则 0；
+
+func shot(x int, y int, width int, height int, enemyTankList []*player.Position, myTankList []*player.Position, grass *player.Position) player.Direction {
+	var scoreArr [4]int
+
+	for i := 0; i < len(scoreArr); i++ {
+		for step := 1; step < 10; step++ {
+			var realX = x
+			var realY = y
+
+			switch i {
+			case 0:
+				realY = y - step
+				break
+			case 1:
+				realY = y + step
+				break
+			case 2:
+				realX = x - step
+				break
+			case 3:
+				realX = x + step
+				break
+			}
+			// 越界跳出循环
+			if realX >= width || realY >= height || realX < 0 || realY < 0 {
+				break
+			}
+
+			// 1.
+			boolEnemy := false
+			for j := 0; j < len(enemyTankList); j++ {
+				if (enemyTankList[i].X == (int32)(realX)) && (enemyTankList[i].Y == (int32)(realY)) {
+					boolEnemy = true
+					break
+				}
+			}
+			if boolEnemy {
+				scoreArr[i] = scoreArr[i] + (10 - step*1)
+			}
+
+			// 2.
+			boolMy := false
+			for k := 0; k < len(myTankList); k++ {
+				if (myTankList[i].X == (int32)(realX)) && (myTankList[i].Y == (int32)(realY)) {
+					boolMy = true
+					break
+				}
+			}
+			if boolMy {
+				scoreArr[i] = scoreArr[i] + (-10 + step*1)
+			}
+
+			// 3.
+			if grass.X == (int32)(realX) && grass.Y == (int32)(realY) {
+				scoreArr[i] = scoreArr[i] + (5 - (int)((float32)(step)*0.5))
+			}
+		}
+	}
+
+	// index 取最高分方向开炮
+	index := 0
+	value := scoreArr[0]
+	for i := 1; i < len(scoreArr); i++ {
+		if scoreArr[i] > value {
+			value = scoreArr[i]
+			index = i
+		}
+	}
+	dirs := []player.Direction{player.Direction_UP, player.Direction_DOWN, player.Direction_LEFT, player.Direction_RIGHT}
+	return dirs[index]
 }
 
 func main() {
