@@ -55,8 +55,8 @@ func (p *PlayerService) UploadParamters(arguments *player.Args_) error {
 // UploadMap is a handler for thrift service.
 // 接收二维地图，存储地图到本地
 func (p *PlayerService) UploadMap(gamemap [][]int32) error {
-	for i := 0; i < 30; i++ {
-		for j := 0; j < 30; j++ {
+	for i := 0; i < 50; i++ {
+		for j := 0; j < 50; j++ {
 			gameMap[i][j] = -1
 		}
 	}
