@@ -174,7 +174,7 @@ func moveOrder(tankPos, desPos *player.Position, tankID int32, tankDir player.Di
 	world := astar.InitWorld(astarGameMap)
 	p, _, found := astar.Path(world.Start((int)(tankPos.X), (int)(tankPos.Y)), world.End((int)(desPos.X), (int)(desPos.Y)))
 	if !found {
-		fmt.Printf("333333\n")
+		fmt.Printf("333333 tankID = %d\n", tankID)
 		return &player.Order{TankId: tankID, Order: "turnTo", Dir: tankDir}
 	}
 	pT := p[0].(*astar.Tile)
@@ -186,22 +186,23 @@ func moveOrder(tankPos, desPos *player.Position, tankID int32, tankDir player.Di
 		nextStep = p[len(p)-2].(*astar.Tile)
 	}
 
-	fmt.Printf("nextStep = %v | X = %d | Y = %d\n", nextStep.Kind, nextStep.X, nextStep.Y)
+	fmt.Printf("nextStep = %v | X = %d | Y = %d | 当前tank pos.x = %d | posY = %d\n", nextStep.Kind, nextStep.X, nextStep.Y, tankPos.X, tankPos.Y)
 	isEqual, dir := getDir(tankPos, nextStep, tankDir)
 	if isEqual == true {
 		if len(nextSteps) == 0 {
 			nextSteps = append(nextSteps, &player.Position{X: (int32)(nextStep.X), Y: (int32)(nextStep.Y)})
 			fmt.Printf("【nextSteps】= %v\n", nextSteps)
 		} else {
-			for i := 0; i < len(nextSteps); i++ {
+			nextStepCount := len(nextSteps)
+			for i := 0; i < nextStepCount; i++ {
 				if nextSteps[i].X == (int32)(nextStep.X) && nextSteps[i].Y == (int32)(nextStep.Y) {
 					fmt.Printf("nextStep = %d,%d | nextSteps = %v\n", nextStep.X, nextStep.Y, nextSteps)
-					fmt.Printf("222222\n")
+					fmt.Printf("222222 tankID = %d\n", tankID)
 					return &player.Order{TankId: tankID, Order: "turnTo", Dir: dir}
 				}
-				fmt.Printf("*********【nextSteps】】】】】】】= %v\n", nextSteps)
+				fmt.Printf("****添加前nextSteps= %v | 要添加的 nextStep X = %d Y = %d | 方向 = %d\n", nextSteps, nextStep.X, nextStep.Y, tankDir)
 				nextSteps = append(nextSteps, &player.Position{X: (int32)(nextStep.X), Y: (int32)(nextStep.Y)})
-				fmt.Printf("【nextSteps】】】】】】】= %v\n", nextSteps)
+				fmt.Printf("****添加后nextSteps= %v\n", nextSteps)
 			}
 		}
 		return &player.Order{TankId: tankID, Order: "move", Dir: dir}

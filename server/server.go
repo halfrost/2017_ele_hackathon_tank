@@ -19,6 +19,8 @@ const (
 
 var gameArguments player.Args_
 var gameMap [30][30]int32
+var astarGameMap [30][30]int32
+var nextSteps []*player.Position
 var myTankList [5]int32
 var myTankTypeList [5]int32
 var myTankNum int
@@ -63,6 +65,7 @@ func (p *PlayerService) UploadMap(gamemap [][]int32) error {
 	for i := 0; i < len(gamemap); i++ {
 		for j := 0; j < len(gamemap[i]); j++ {
 			gameMap[i][j] = gamemap[i][j]
+			astarGameMap[i][j] = gamemap[i][j]
 		}
 	}
 	return nil
@@ -102,20 +105,22 @@ func (p *PlayerService) LatestState(state *player.GameState) error {
 func (p *PlayerService) GetNewOrders() ([]*player.Order, error) {
 	refeshTankState()
 	orders := []*player.Order{}
-	fmt.Printf("第 %d 回合 | gameState = %v\n", roundCount, gameState)
+	//fmt.Printf("第 %d 回合 | gameState = %v\n", roundCount, gameState)
+	fmt.Printf("myTankNum = %d\n", myTankNum)
+	nextSteps = make([]*player.Position, 0)
 	for i := 0; i < myTankNum; i++ {
 		pos, dir, _ := getTankPosDirHp(myTankList[i])
-		if roundCount%4 == 0 && pos.X > 10 && pos.Y > 10 {
-			order := &player.Order{TankId: myTankList[i], Order: "fire", Dir: player.Direction_DOWN}
-			orders = append(orders, order)
-			fmt.Printf("第 %d 回合 | 【8080】玩家指令 = %v\n", roundCount, orders)
-			return orders, nil
-		}
+		// if roundCount%4 == 0 && pos.X > 10 && pos.Y > 10 {
+		// 	order := &player.Order{TankId: myTankList[i], Order: "fire", Dir: player.Direction_DOWN}
+		// 	orders = append(orders, order)
+		// 	fmt.Printf("第 %d 回合 | 【8081】玩家攻击指令 = %v\n", roundCount, orders)
+		// }
 
 		order := moveOrder(pos, &player.Position{X: (int32)(gameMapWidth), Y: (int32)(gameMapWidth)}, myTankList[i], dir)
 		orders = append(orders, order)
-		fmt.Printf("第 %d 回合 | 【8080】玩家指令 = %v order = %v\n", roundCount, orders, order)
+
 	}
+	fmt.Printf("第 %d 回合 | 【8081】玩家移动指令 = %v \n", roundCount, orders)
 	return orders, nil
 }
 
@@ -130,31 +135,47 @@ func getTankPosDirHp(tankID int32) (pos *player.Position, dir player.Direction, 
 
 // refeshTankState 刷新己方坦克 list 数组，并且刷新己方 myTankNum
 func refeshTankState() {
-	isExist := false
 	for i := 0; i < len(myTankList); i++ {
+		isExist := false
 		for j := 0; j < len(gameState.Tanks); j++ {
 			if myTankList[i] == gameState.Tanks[j].ID {
 				isExist = true
 			}
 		}
 		if isExist == false {
-			myTankNum--
 			for k := i; k < len(myTankList)-1; k++ {
 				myTankList[k] = myTankList[k+1]
 			}
 		}
 	}
-}
-func moveOrder(tankPos, desPos *player.Position, tankID int32, tankDir player.Direction) (order *player.Order) {
-	for i := 0; i < len(gameState.Tanks); i++ {
-		if tankID != gameState.Tanks[i].ID {
-			gameMap[gameState.Tanks[i].Pos.X][gameState.Tanks[i].Pos.Y] = 1
+	myTankNum = 0
+	for count := 0; count < len(myTankList); count++ {
+		if myTankList[count] != -1 {
+			myTankNum++
 		}
 	}
-	world := astar.InitWorld(gameMap)
+}
+
+// refeshAStarMap 刷新 astar 地图
+func refeshAStarMap() {
+	for i := 0; i < len(gameMap); i++ {
+		for j := 0; j < len(gameMap[i]); j++ {
+			astarGameMap[i][j] = gameMap[i][j]
+		}
+	}
+	for i := 0; i < len(gameState.Tanks); i++ {
+		astarGameMap[gameState.Tanks[i].Pos.X][gameState.Tanks[i].Pos.Y] = 1
+	}
+}
+
+func moveOrder(tankPos, desPos *player.Position, tankID int32, tankDir player.Direction) (order *player.Order) {
+
+	refeshAStarMap()
+	world := astar.InitWorld(astarGameMap)
 	p, _, found := astar.Path(world.Start((int)(tankPos.X), (int)(tankPos.Y)), world.End((int)(desPos.X), (int)(desPos.Y)))
 	if !found {
-		return &player.Order{TankId: tankID, Order: "fire", Dir: tankDir}
+		fmt.Printf("333333 tankID = %d\n", tankID)
+		return &player.Order{TankId: tankID, Order: "turnTo", Dir: tankDir}
 	}
 	pT := p[0].(*astar.Tile)
 	fmt.Print("Resulting path = \n", world.RenderPath(p))
@@ -164,31 +185,48 @@ func moveOrder(tankPos, desPos *player.Position, tankID int32, tankDir player.Di
 	} else {
 		nextStep = p[len(p)-2].(*astar.Tile)
 	}
-	fmt.Printf("nextStep = %v | X = %d | Y = %d\n", nextStep.Kind, nextStep.X, nextStep.Y)
-	isEqual, dir := getDir(tankPos, nextStep)
+
+	fmt.Printf("nextStep = %v | X = %d | Y = %d | 当前tank pos.x = %d | posY = %d\n", nextStep.Kind, nextStep.X, nextStep.Y, tankPos.X, tankPos.Y)
+	isEqual, dir := getDir(tankPos, nextStep, tankDir)
 	if isEqual == true {
+		if len(nextSteps) == 0 {
+			nextSteps = append(nextSteps, &player.Position{X: (int32)(nextStep.X), Y: (int32)(nextStep.Y)})
+			fmt.Printf("【nextSteps】= %v\n", nextSteps)
+		} else {
+			nextStepCount := len(nextSteps)
+			for i := 0; i < nextStepCount; i++ {
+				if nextSteps[i].X == (int32)(nextStep.X) && nextSteps[i].Y == (int32)(nextStep.Y) {
+					fmt.Printf("nextStep = %d,%d | nextSteps = %v\n", nextStep.X, nextStep.Y, nextSteps)
+					fmt.Printf("222222 tankID = %d\n", tankID)
+					return &player.Order{TankId: tankID, Order: "turnTo", Dir: dir}
+				}
+				fmt.Printf("****添加前nextSteps= %v | 要添加的 nextStep X = %d Y = %d | 方向 = %d\n", nextSteps, nextStep.X, nextStep.Y, tankDir)
+				nextSteps = append(nextSteps, &player.Position{X: (int32)(nextStep.X), Y: (int32)(nextStep.Y)})
+				fmt.Printf("****添加后nextSteps= %v\n", nextSteps)
+			}
+		}
 		return &player.Order{TankId: tankID, Order: "move", Dir: dir}
 	}
+	fmt.Printf("111111 tanDir = %d dir = %d\n", tankDir, dir)
 	return &player.Order{TankId: tankID, Order: "turnTo", Dir: dir}
 }
 
-func getDir(tankPos *player.Position, nextStep *astar.Tile) (isEqual bool, dir player.Direction) {
+func getDir(tankPos *player.Position, nextStep *astar.Tile, tankDir player.Direction) (isEqual bool, dir player.Direction) {
 	if (int32)(nextStep.X) == tankPos.X {
-		isEqual = false
 		if (int32)(nextStep.Y) > tankPos.Y {
 			dir = player.Direction_RIGHT
 		} else {
 			dir = player.Direction_LEFT
 		}
 	} else {
-		isEqual = true
 		if (int32)(nextStep.X) > tankPos.X {
 			dir = player.Direction_DOWN
 		} else {
 			dir = player.Direction_UP
 		}
 	}
-	return isEqual, dir
+
+	return tankDir == dir, dir
 }
 
 func main() {
