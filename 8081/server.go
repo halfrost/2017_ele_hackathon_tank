@@ -18,8 +18,8 @@ const (
 )
 
 var gameArguments player.Args_
-var gameMap [30][30]int32
-var astarGameMap [30][30]int32
+var gameMap [50][50]int32
+var astarGameMap [50][50]int32
 var nextSteps []*player.Position
 var myTankList [5]int32
 var myTankTypeList [5]int32
