@@ -294,7 +294,7 @@ func getTankListFromGameState() (enemyTankPos, myTankPos []*player.Position) {
 // 2. 若有己方坦克，距离每增加一格增加 1，初始为 -10；若无则 0；
 // 3. 若有目标草丛，距离每增加一格减少 0.5，初始 5；若无则 0；
 
-func shot(x int, y int, width int, height int, enemyTankList []*player.Position, myTankList []*player.Position, grass *player.Position) player.Direction {
+func shot(x int, y int, width int, height int, enemyTankList []*player.Position, myTankList []*player.Position, grass *player.Position) int {
 	var scoreArr [4]int
 	var speedOffset = 子弹速度 - 坦克速度
 	var boardWidth = 棋盘宽度
@@ -365,10 +365,9 @@ func shot(x int, y int, width int, height int, enemyTankList []*player.Position,
 		}
 	}
 	if (value >= total - value) || (value >= (boardWidth - 1) {
-		dirs := []player.Direction{player.Direction_UP, player.Direction_DOWN, player.Direction_LEFT, player.Direction_RIGHT}
-		return dirs[index]
+		return index + 1
 	}
-	return null
+	return 0
 }
 
 func main() {
