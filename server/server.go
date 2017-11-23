@@ -318,6 +318,20 @@ func moveOrder(tankPos, desPos *player.Position, tankID int32, tankDir player.Di
 
 	fmt.Printf("nextStep = %v | X = %d | Y = %d | 当前tank pos.x = %d | posY = %d\n", nextStep.Kind, nextStep.X, nextStep.Y, tankPos.X, tankPos.Y)
 	isEqual, dir := getDir(tankPos, nextStep, tankDir)
+
+	if gameMap[nextStep.X][nextStep.Y] == 1 {
+		// 下一步有对方坦克
+		if (dir == player.Direction_UP || dir == player.Direction_DOWN) && (isEqual == true) {
+			return &player.Order{TankId: tankID, Order: "turnTo", Dir: player.Direction_RIGHT}
+		}
+		if (dir == player.Direction_LEFT || dir == player.Direction_RIGHT) && (isEqual == true) {
+			return &player.Order{TankId: tankID, Order: "turnTo", Dir: player.Direction_UP}
+		}
+		if isEqual == false {
+			return &player.Order{TankId: tankID, Order: "move", Dir: tankDir}
+		}
+	}
+
 	if isEqual == true {
 		if len(nextSteps) == 0 {
 			nextSteps = append(nextSteps, &player.Position{X: (int32)(nextStep.X), Y: (int32)(nextStep.Y)})
