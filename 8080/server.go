@@ -33,6 +33,15 @@ var gameMapCenter int
 var gameMapDiagonally int
 var gameMapWidth int
 
+var myGrasses []*player.Position
+var enemyGrasses []*player.Position
+
+var myCurrentGrass *player.GrassPosition
+var enemyCurrentGrass *player.GrassPosition
+
+var myGrassesCount = 0
+var enemyGrassesCount = 0
+
 // PlayerService struct
 type PlayerService struct{}
 
@@ -461,6 +470,271 @@ func shot(x int, y int, width int, height int, enemyTankList []*player.Position,
 	}
 	dirs := []player.Direction{player.Direction_UP, player.Direction_DOWN, player.Direction_LEFT, player.Direction_RIGHT}
 	return dirs[index]
+}
+
+// grass
+type GrassPosition struct {
+	fired bool
+	pos *player.Position
+	next int
+	isMine bool
+}
+
+type Range struct {
+  start *player.Position
+  end *player.Position
+}
+
+func getNextEnemyGrass() {
+	if 0 == enemyCurrentGrass.next {
+		if true == enemyCurrentGrass.isMine {
+			if enemyGrassesCount > 0 {
+				enemyCurrentGrass = enemyGrasses[enemyCurrentGrass.next]
+			} else {
+				enemyCurrentGrass = myGrasses[enemyCurrentGrass.next]
+			}
+		} else {
+			if myGrassesCount > 0 {
+				enemyCurrentGrass = myGrasses[enemyCurrentGrass.next]
+			} else {
+				enemyCurrentGrass = enemyGrasses[enemyCurrentGrass.next]
+			}
+		}
+	} else {
+		if true == enemyCurrentGrass.isMine {
+			enemyCurrentGrass = myGrasses[enemyCurrentGrass.next]
+		} else {
+			enemyCurrentGrass = enemyGrasses[enemyCurrentGrass.next]
+		}
+	}
+}
+
+func getNextMyGrass() *GrassPosition {
+	if myGrassesCount > 0 {
+		myCurrentGrass = myGrasses[myCurrentGrass.next]
+	} else {
+		myCurrentGrass = enemyGrasses[myCurrentGrass.next]
+	}
+}
+
+func gotoTheTankInGrass(tank *player.Tank) *player.Order {
+	_, myTankPoses := getTankListFromGameState()
+
+	for i := 0; i < len(myTankPoses); i++ {
+		tankPos := myTankPoses[i]
+		if tankPos.X = enemyCurrentGrass.X && tankPos.Y = enemyCurrentGrass.Y {
+			getNextEnemyGrass()
+			break
+		}
+	}
+	if true == enemyCurrentGrass.fired {
+		getNextEnemyGrass()
+	}
+
+	moveToGrass(tank.ID, tank.Pos, enemyCurrentGrass.pos)
+}
+
+func moveToGrass(tankID int, tankPos *Position, desPos *Position) {
+	p, _, found := astar.Path(world.Start((int)(tankPos.X), (int)(tankPos.Y)), world.End((int)(desPos.X), (int)(desPos.Y)))
+
+	pT := p[0].(*astar.Tile)
+	fmt.Print("Resulting path = \n", world.RenderPath(p))
+	var nextStep *astar.Tile
+	if (((int32)(pT.X)) == tankPos.X) && (((int32)(pT.Y)) == tankPos.Y) {
+		nextStep = p[1].(*astar.Tile)
+	} else {
+		nextStep = p[len(p)-2].(*astar.Tile)
+	}
+
+	fmt.Printf("nextStep = %v | X = %d | Y = %d | 当前tank pos.x = %d | posY = %d\n", nextStep.Kind, nextStep.X, nextStep.Y, tankPos.X, tankPos.Y)
+	_, dir := getDir(tankPos, nextStep, tankDir)
+
+	if !found {
+		return &player.Order{TankId: tankID, Order: "turnTo", Dir: dir}
+	} else {
+		return &player.Order{TankId: tankID, Order: "move", Dir: dir}
+	}
+}
+
+func gotoTheGrassNearbyTheFlag(tank *player.Tank) *player.Order {
+	_, myTankPoses := getTankListFromGameState()
+
+	for i := 0; i < len(myTankPoses); i++ {
+		tankPos := myTankPoses[i]
+		if tankPos.X = myCurrentGrass.X && tankPos.Y = myCurrentGrass.Y {
+			getNextEnemyGrass()
+			break
+		}
+	}
+
+	if tank.Pos.X = myCurrentGrass.X && tank.Pos.Y = myCurrentGrass.Y {
+		getNextEnemyGrass()
+	}
+
+	moveToGrass(tank.ID, tank.Pos, enemyCurrentGrass.pos)
+}
+
+func getAllGrasses() {
+  hasMyGrasses = getGrasses(true, myGrasses)
+	hasEnemyGrasses = getGrasses(false, enemyGrasses)
+
+	if true == hasEnemyGrasses {
+		enemyCurrentGrass = enemyGrasses[0]
+		if false == hasMyGrasses {
+			myCurrentGrass = enemyGrasses[0]
+		}
+	}
+
+	if true == hasMyGrasses {
+		myCurrentGrass = myGrasses[0]
+		if false == hasEnemyGrasses {
+			enemyCurrentGrass = myGrasses[0]
+		}
+	}
+
+	return nil
+}
+
+func getGrasses(isMine bool, grasses []*GrassPosition) int {
+	start, end := getStartStartAndEnd(isMine)
+	grassCount := 0
+	grasses = make([]*GrassPosition, gameMapWidth*gameMapWidth/2.0)
+
+	for i := start.X ; ; {
+		if end.X >= start.X {
+			i++
+		} else {
+			i--
+		}
+
+		for j := start.Y ; ; {
+			if end.Y >= start.Y {
+				j++
+			} else {
+				j--
+			}
+
+			pos := &player.Position{X: i, Y: j}
+			if true == isGrass(&pos) {
+
+				grassPos := &GrassPosition{}
+				grassPos.fired = false
+				grassPos.next = grassCount+1
+				grassPos.pos = pos
+				grassPos.isMine = isMine
+
+				grasses[grassCount++] = grassPos
+			}
+
+			if end.Y >= start.Y {
+				if i > end.Y {
+					break
+				}
+			} else {
+				if j < end.Y {
+					break
+				}
+			}
+		}
+		if end.X >= start.X {
+			if i > end.X {
+				break
+			}
+		} else {
+			if i < end.X {
+				break
+			}
+		}
+	}
+
+	if grassCount > 0 {
+		grassPos := grasses[grassCount]
+		grassPos.next = 0
+	}
+	return grassCount
+}
+
+func getStartAndEnd(isMine bool) (start *player.Position, end *player.Position) {
+	tankID := myTankList[0]
+	for i :=0; i < len(gameState.tanks); i++ {
+		if tankID == gameState.tanks[i].ID {
+			tankPos := gameState.tanks[i].Pos
+			destPos := &player.Position{}
+			startPos := &player.Position{}
+
+			if tankPos.X < gameMapWidth/2.0 {
+				if true == isMine {
+					startPos.X = gameMapWidth/2.0-3
+					destPos.X = 3
+				} else {
+					startPos.X = gameMapWidth/2.0+3
+					destPos.X = gameMapWidth-1
+				}
+			} else {
+				if true == isMine {
+					startPos.X = gameMapWidth/2.0+3
+					destPos.X = gameMapWidth-1
+				} else {
+					startPos.X = gameMapWidth/2.0-3
+					destPos.X = 3
+				}
+			}
+			if (tankPos.Y < gameMapWidth/2.0) {
+				if true == isMine {
+					startPos.Y = gameMapWidth/2.0-3
+					destPos.Y = 3
+				} else {
+					startPos.Y = gameMapWidth/2.0+3
+					destPos.Y = gameMapWidth-1
+				}
+			} else {
+				if true == isMine {
+					startPos.Y = gameMapWidth/2.0+3
+					destPos.Y = gameMapWidth-1
+				} else {
+					startPos.Y = gameMapWidth/2.0-3
+					destPos.Y = 3
+				}
+			}
+
+			return &startPos, &destPos
+		}
+	}
+	return nil, nil
+}
+
+func isGrass(pos *player.Position) bool {
+	if 2 == gameMap[pos.X][pos.Y] {
+		if pos.X - 1 > 0 && 1 == gameMap[pos.X - 1][pos.Y]
+		&& pos.X + 1 < gameMapWidth && 1 == gameMap[pos.X + 1][pos.Y] {
+			return false
+		}
+		if pos.Y - 1 > 0 && 1 == gameMap[pos.X][pos.Y - 1]
+		&& pos.Y + 1 < gameMapWidth && 1 == gameMap[pos.X][pos.Y + 1] {
+			return false
+		}
+		return true
+	}
+
+	if 0 == gameMap[pos.X][pos.Y] {
+		if pos.X - 1 > 0 && 1 == gameMap[pos.X - 1][pos.Y]
+		&& pos.Y - 1 > 0 && 1 == gameMap[pos.X][pos.Y - 1] {
+			return true
+		}
+		if pos.X + 1 < gameMapWidth && 1 == gameMap[pos.X + 1][pos.Y]
+		&& pos.Y - 1 > 0 && 1 == gameMap[pos.X][pos.Y - 1] {
+			return true
+		}
+		if pos.X - 1 > 0 && 1 == gameMap[pos.X - 1][pos.Y]
+		&& pos.Y + 1 < gameMapWidth && 1 == gameMap[pos.X][pos.Y + 1] {
+			return true
+		}
+		if pos.X + 1 < gameMapWidth && 1 == gameMap[pos.X + 1][pos.Y]
+		&& pos.Y + 1 < gameMapWidth && 1 == gameMap[pos.X][pos.Y + 1] {
+			return true
+		}
+		return false
+	}
 }
 
 func main() {
