@@ -1,1 +1,2 @@
-./server
+#! /bin/sh
+/data/server
