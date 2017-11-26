@@ -569,29 +569,7 @@ func gotoTheTankInGrass(tank *player.Tank) *player.Order {
 		getNextEnemyGrass()
 	}
 
-	return moveToGrass(tank.ID, tank.Pos, enemyCurrentGrass.pos, tank.Dir)
-}
-
-func moveToGrass(tankID int32, tankPos *player.Position, desPos *player.Position, tankDir player.Direction) (order *player.Order) {
-	world := astar.InitWorld(astarGameMap)
-	p, _, found := astar.Path(world.Start((int)(tankPos.X), (int)(tankPos.Y)), world.End((int)(desPos.X), (int)(desPos.Y)))
-
-	pT := p[0].(*astar.Tile)
-	fmt.Print("Resulting path = \n", world.RenderPath(p))
-	var nextStep *astar.Tile
-	if (((int32)(pT.X)) == tankPos.X) && (((int32)(pT.Y)) == tankPos.Y) {
-		nextStep = p[1].(*astar.Tile)
-	} else {
-		nextStep = p[len(p)-2].(*astar.Tile)
-	}
-
-	fmt.Printf("nextStep = %v | X = %d | Y = %d | 当前tank pos.x = %d | posY = %d\n", nextStep.Kind, nextStep.X, nextStep.Y, tankPos.X, tankPos.Y)
-	_, dir := getDir(tankPos, nextStep, tankDir)
-
-	if !found {
-		return &player.Order{TankId: tankID, Order: "turnTo", Dir: dir}
-	}
-	return &player.Order{TankId: tankID, Order: "move", Dir: dir}
+	return moveOrder(tank.Pos, enemyCurrentGrass.pos, tank.ID, tank.Dir)
 }
 
 // 这是 4 号调用
@@ -600,8 +578,7 @@ func gotoTheGrassNearbyTheFlag(tank *player.Tank) *player.Order {
 	if tank.Pos.X == myCurrentGrass.pos.X && tank.Pos.Y == myCurrentGrass.pos.Y {
 		getNextMyGrass()
 	}
-
-	return moveToGrass(tank.ID, tank.Pos, enemyCurrentGrass.pos, tank.Dir)
+	return moveOrder(tank.Pos, enemyCurrentGrass.pos, tank.ID, tank.Dir)
 }
 
 func getAllGrasses() {
