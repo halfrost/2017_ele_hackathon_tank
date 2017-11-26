@@ -730,13 +730,13 @@ func isGrass(pos *player.Position) bool {
 	}
 
 	if 0 == gameMap[pos.X][pos.Y] {
-		if (pos.X-1 > 0) && (1 == gameMap[pos.X-1][pos.Y]) && (pos.Y-1 > 0) && (1 == gameMap[pos.X][pos.Y-1]) {
+		if (pos.X-1 >= 0) && (1 == gameMap[pos.X-1][pos.Y]) && (pos.Y-1 >= 0) && (1 == gameMap[pos.X][pos.Y-1]) {
 			return true
 		}
-		if (pos.X+1 < (int32)(gameMapWidth)) && (1 == gameMap[pos.X+1][pos.Y]) && (pos.Y-1 > 0) && (1 == gameMap[pos.X][pos.Y-1]) {
+		if (pos.X+1 < (int32)(gameMapWidth)) && (1 == gameMap[pos.X+1][pos.Y]) && (pos.Y-1 >= 0) && (1 == gameMap[pos.X][pos.Y-1]) {
 			return true
 		}
-		if (pos.X-1 > 0) && (1 == gameMap[pos.X-1][pos.Y]) && (pos.Y+1 < (int32)(gameMapWidth)) && (1 == gameMap[pos.X][pos.Y+1]) {
+		if (pos.X-1 >= 0) && (1 == gameMap[pos.X-1][pos.Y]) && (pos.Y+1 < (int32)(gameMapWidth)) && (1 == gameMap[pos.X][pos.Y+1]) {
 			return true
 		}
 		if (pos.X+1 < (int32)(gameMapWidth)) && (1 == gameMap[pos.X+1][pos.Y]) && (pos.Y+1 < (int32)(gameMapWidth)) && (1 == gameMap[pos.X][pos.Y+1]) {
