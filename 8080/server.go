@@ -669,35 +669,35 @@ func getStartAndEnd(isMine bool) (start *player.Position, end *player.Position) 
 
 			if tankPos.X < (int32)(gameMapWidth/2.0) {
 				if true == isMine {
-					startPos.X = (int32)(gameMapWidth/2.0 - 3)
+					startPos.X = (int32)(gameMapWidth/2.0 - 1)
 					destPos.X = 0
 				} else {
-					startPos.X = (int32)(gameMapWidth/2.0 + 3)
+					startPos.X = (int32)(gameMapWidth/2.0)
 					destPos.X = (int32)(gameMapWidth - 1)
 				}
 			} else {
 				if true == isMine {
-					startPos.X = (int32)(gameMapWidth/2.0 + 3)
+					startPos.X = (int32)(gameMapWidth/2.0)
 					destPos.X = (int32)(gameMapWidth - 1)
 				} else {
-					startPos.X = (int32)(gameMapWidth/2.0 - 3)
+					startPos.X = (int32)(gameMapWidth/2.0 - 1)
 					destPos.X = 0
 				}
 			}
 			if tankPos.Y < (int32)(gameMapWidth/2.0) {
 				if true == isMine {
-					startPos.Y = (int32)(gameMapWidth/2.0 - 3)
+					startPos.Y = (int32)(gameMapWidth/2.0 - 1)
 					destPos.Y = 0
 				} else {
-					startPos.Y = (int32)(gameMapWidth/2.0 + 3)
+					startPos.Y = (int32)(gameMapWidth/2.0)
 					destPos.Y = (int32)(gameMapWidth - 1)
 				}
 			} else {
 				if true == isMine {
-					startPos.Y = (int32)(gameMapWidth/2.0 + 3)
+					startPos.Y = (int32)(gameMapWidth/2.0)
 					destPos.Y = (int32)(gameMapWidth - 1)
 				} else {
-					startPos.Y = (int32)(gameMapWidth/2.0 - 3)
+					startPos.Y = (int32)(gameMapWidth/2.0 - 1)
 					destPos.Y = 0
 				}
 			}
