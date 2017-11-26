@@ -241,7 +241,7 @@ func (p *PlayerService) GetNewOrders() ([]*player.Order, error) {
 				orders = append(orders, order)
 			} else if myTankList[i] != -1 && i == 3 { // 第四辆坦克 - 扫描
 				if 0 == myGrassesCount && 0 == enemyGrassesCount {
-					len(enemyTankPos) > 0 {
+					if len(enemyTankPos) > 0 {
 						order := moveOrder(pos, &player.Position{X: (int32)(enemyTankPos[0].X), Y: (int32)(enemyTankPos[0].Y)}, myTankList[i], dir)
 						orders = append(orders, order)
 					}
