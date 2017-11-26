@@ -81,9 +81,6 @@ func (p *PlayerService) UploadMap(gamemap [][]int32) error {
 			astarGameMap[i][j] = gamemap[i][j]
 		}
 	}
-
-	// 获取所有草地
-	getAllGrasses()
 	return nil
 }
 
@@ -113,6 +110,11 @@ func (p *PlayerService) LatestState(state *player.GameState) error {
 	gameState.FlagPos = state.FlagPos
 
 	gameStates[roundCount] = state
+
+	if roundCount == 0 {
+		// 获取所有草地
+		getAllGrasses()
+	}
 	return nil
 }
 
@@ -549,25 +551,20 @@ func getNextEnemyGrass() {
 	}
 }
 
-func getNextMyGrass() *GrassPosition {
+func getNextMyGrass() {
 	if myGrassesCount > 0 {
 		myCurrentGrass = myGrasses[myCurrentGrass.next]
 	} else {
+		fmt.Printf("enemyGrasses = %v myCurrentGrass = %v\n", enemyGrasses, myCurrentGrass)
 		myCurrentGrass = enemyGrasses[myCurrentGrass.next]
 	}
-	return nil
 }
 
 func gotoTheTankInGrass(tank *player.Tank) *player.Order {
-	_, myTankPoses := getTankListFromGameState()
-
-	for i := 0; i < len(myTankPoses); i++ {
-		tankPos := myTankPoses[i]
-		if tankPos.X == enemyCurrentGrass.pos.X && tankPos.Y == enemyCurrentGrass.pos.Y {
-			getNextEnemyGrass()
-			break
-		}
+	if tank.Pos.X == myCurrentGrass.pos.X && tank.Pos.Y == myCurrentGrass.pos.Y {
+		getNextEnemyGrass()
 	}
+
 	if true == enemyCurrentGrass.fired {
 		getNextEnemyGrass()
 	}
@@ -599,47 +596,40 @@ func moveToGrass(tankID int32, tankPos *player.Position, desPos *player.Position
 
 // 这是 4 号调用
 func gotoTheGrassNearbyTheFlag(tank *player.Tank) *player.Order {
-	_, myTankPoses := getTankListFromGameState()
-
-	for i := 0; i < len(myTankPoses); i++ {
-		tankPos := myTankPoses[i]
-		if tankPos.X == myCurrentGrass.pos.X && tankPos.Y == myCurrentGrass.pos.Y {
-			getNextEnemyGrass()
-			break
-		}
-	}
-
+	fmt.Printf("tank.Pos = %v , myCurrentGrass.pos = %v\n", tank, myCurrentGrass)
 	if tank.Pos.X == myCurrentGrass.pos.X && tank.Pos.Y == myCurrentGrass.pos.Y {
-		getNextEnemyGrass()
+		getNextMyGrass()
 	}
 
 	return moveToGrass(tank.ID, tank.Pos, enemyCurrentGrass.pos, tank.Dir)
 }
 
 func getAllGrasses() {
-	hasMyGrasses := getGrasses(true, myGrasses)
-	hasEnemyGrasses := getGrasses(false, enemyGrasses)
+	myGrassesCount, myGrasses = getGrasses(true)
+	enemyGrassesCount, enemyGrasses = getGrasses(false)
 
-	if 1 == hasEnemyGrasses {
+	fmt.Printf("myGrasses = %v , enemyGrasses = %v , myGrassesCount = %d enemyGrassesCount =%d\n", myGrasses, enemyGrasses, myGrassesCount, enemyGrassesCount)
+	if enemyGrassesCount > 0 {
 		enemyCurrentGrass = enemyGrasses[0]
-		if 0 == hasMyGrasses {
+		if 0 == myGrassesCount {
 			myCurrentGrass = enemyGrasses[0]
 		}
 	}
 
-	if 1 == hasMyGrasses {
+	if myGrassesCount > 0 {
 		myCurrentGrass = myGrasses[0]
-		if 0 == hasEnemyGrasses {
+		if 0 == enemyGrassesCount {
 			enemyCurrentGrass = myGrasses[0]
 		}
 	}
 }
 
-func getGrasses(isMine bool, grasses []*GrassPosition) int {
+func getGrasses(isMine bool) (int, []*GrassPosition) {
 	start, end := getStartAndEnd(isMine)
 	grassCount := 0
-	grasses = make([]*GrassPosition, gameMapWidth*gameMapWidth/2.0)
+	grasses := make([]*GrassPosition, gameMapWidth*gameMapWidth/2.0)
 
+	fmt.Printf("初始化以后 grasses = %v\n", grasses)
 	for i := start.X; ; {
 		if end.X >= start.X {
 			i++
@@ -663,12 +653,14 @@ func getGrasses(isMine bool, grasses []*GrassPosition) int {
 				grassPos.pos = pos
 				grassPos.isMine = isMine
 
+				// grasses = append(grasses, grassPos)
 				grasses[grassCount] = grassPos
 				grassCount++
+				fmt.Printf("赋值以后 grasses = %v\n", grasses)
 			}
 
 			if end.Y >= start.Y {
-				if i > end.Y {
+				if j > end.Y {
 					break
 				}
 			} else {
@@ -688,10 +680,12 @@ func getGrasses(isMine bool, grasses []*GrassPosition) int {
 		}
 	}
 	if grassCount > 0 {
-		grassPos := grasses[grassCount]
+		fmt.Printf("grasses = %v\n", grasses)
+		grassPos := grasses[grassCount-1]
 		grassPos.next = 0
 	}
-	return grassCount
+	fmt.Printf("grasses = %v\n", grasses)
+	return grassCount, grasses
 }
 
 func getStartAndEnd(isMine bool) (start *player.Position, end *player.Position) {
@@ -713,10 +707,10 @@ func getStartAndEnd(isMine bool) (start *player.Position, end *player.Position) 
 			} else {
 				if true == isMine {
 					startPos.X = (int32)(gameMapWidth/2.0 + 3)
-					destPos.X = (int32)(gameMapWidth - 1)
+					destPos.X = (int32)(gameMapWidth - 3)
 				} else {
 					startPos.X = (int32)(gameMapWidth/2.0 - 3)
-					destPos.X = 3
+					destPos.X = 0
 				}
 			}
 			if tankPos.Y < (int32)(gameMapWidth/2.0) {
@@ -730,13 +724,13 @@ func getStartAndEnd(isMine bool) (start *player.Position, end *player.Position) 
 			} else {
 				if true == isMine {
 					startPos.Y = (int32)(gameMapWidth/2.0 + 3)
-					destPos.Y = (int32)(gameMapWidth - 1)
+					destPos.Y = (int32)(gameMapWidth - 3)
 				} else {
 					startPos.Y = (int32)(gameMapWidth/2.0 - 3)
-					destPos.Y = 3
+					destPos.Y = 0
 				}
 			}
-
+			fmt.Printf("startPos - %d, destPos = %d\n", startPos, destPos)
 			return startPos, destPos
 		}
 	}
@@ -744,6 +738,7 @@ func getStartAndEnd(isMine bool) (start *player.Position, end *player.Position) 
 }
 
 func isGrass(pos *player.Position) bool {
+	fmt.Printf("pos = %v gameMap[pos.X][pos.Y]=%d\n", pos, gameMap[pos.X][pos.Y])
 	if 2 == gameMap[pos.X][pos.Y] {
 		if (pos.X-1 > 0) && (1 == gameMap[pos.X-1][pos.Y]) && (pos.X+1 < (int32)(gameMapWidth)) && (1 == gameMap[pos.X+1][pos.Y]) {
 			return false
@@ -754,7 +749,7 @@ func isGrass(pos *player.Position) bool {
 		return true
 	}
 
-	if 0 == gameMap[pos.X][pos.Y] {
+	if 0 == gameMap[pos.X][pos.Y] || 2 == gameMap[pos.X][pos.Y] {
 		if (pos.X-1 > 0) && (1 == gameMap[pos.X-1][pos.Y]) && (pos.Y-1 > 0) && (1 == gameMap[pos.X][pos.Y-1]) {
 			return true
 		}
