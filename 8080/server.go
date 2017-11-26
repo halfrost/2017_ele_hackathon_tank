@@ -676,7 +676,7 @@ func getStartAndEnd(isMine bool) (start *player.Position, end *player.Position) 
 			if tankPos.X < (int32)(gameMapWidth/2.0) {
 				if true == isMine {
 					startPos.X = (int32)(gameMapWidth/2.0 - 3)
-					destPos.X = 3
+					destPos.X = 0
 				} else {
 					startPos.X = (int32)(gameMapWidth/2.0 + 3)
 					destPos.X = (int32)(gameMapWidth - 1)
@@ -684,7 +684,7 @@ func getStartAndEnd(isMine bool) (start *player.Position, end *player.Position) 
 			} else {
 				if true == isMine {
 					startPos.X = (int32)(gameMapWidth/2.0 + 3)
-					destPos.X = (int32)(gameMapWidth - 3)
+					destPos.X = (int32)(gameMapWidth - 1)
 				} else {
 					startPos.X = (int32)(gameMapWidth/2.0 - 3)
 					destPos.X = 0
@@ -693,7 +693,7 @@ func getStartAndEnd(isMine bool) (start *player.Position, end *player.Position) 
 			if tankPos.Y < (int32)(gameMapWidth/2.0) {
 				if true == isMine {
 					startPos.Y = (int32)(gameMapWidth/2.0 - 3)
-					destPos.Y = 3
+					destPos.Y = 0
 				} else {
 					startPos.Y = (int32)(gameMapWidth/2.0 + 3)
 					destPos.Y = (int32)(gameMapWidth - 1)
@@ -701,7 +701,7 @@ func getStartAndEnd(isMine bool) (start *player.Position, end *player.Position) 
 			} else {
 				if true == isMine {
 					startPos.Y = (int32)(gameMapWidth/2.0 + 3)
-					destPos.Y = (int32)(gameMapWidth - 3)
+					destPos.Y = (int32)(gameMapWidth - 1)
 				} else {
 					startPos.Y = (int32)(gameMapWidth/2.0 - 3)
 					destPos.Y = 0
@@ -717,16 +717,16 @@ func getStartAndEnd(isMine bool) (start *player.Position, end *player.Position) 
 func isGrass(pos *player.Position) bool {
 	fmt.Printf("pos = %v gameMap[pos.X][pos.Y]=%d\n", pos, gameMap[pos.X][pos.Y])
 	if 2 == gameMap[pos.X][pos.Y] {
-		if (pos.X-1 > 0) && (1 == gameMap[pos.X-1][pos.Y]) && (pos.X+1 < (int32)(gameMapWidth)) && (1 == gameMap[pos.X+1][pos.Y]) {
-			return false
-		}
-		if (pos.Y-1 > 0) && (1 == gameMap[pos.X][pos.Y-1]) && (pos.Y+1 < (int32)(gameMapWidth)) && (1 == gameMap[pos.X][pos.Y+1]) {
-			return false
-		}
+		// if (pos.X-1 > 0) && (1 == gameMap[pos.X-1][pos.Y]) && (pos.X+1 < (int32)(gameMapWidth)) && (1 == gameMap[pos.X+1][pos.Y]) {
+		// 	return false
+		// }
+		// if (pos.Y-1 > 0) && (1 == gameMap[pos.X][pos.Y-1]) && (pos.Y+1 < (int32)(gameMapWidth)) && (1 == gameMap[pos.X][pos.Y+1]) {
+		// 	return false
+		// }
 		return true
 	}
 
-	if 0 == gameMap[pos.X][pos.Y] || 2 == gameMap[pos.X][pos.Y] {
+	if 0 == gameMap[pos.X][pos.Y] {
 		if (pos.X-1 > 0) && (1 == gameMap[pos.X-1][pos.Y]) && (pos.Y-1 > 0) && (1 == gameMap[pos.X][pos.Y-1]) {
 			return true
 		}
