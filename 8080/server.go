@@ -13,7 +13,7 @@ import (
 
 const (
 	// HOST host
-	HOST = "0.0.0.0"
+	HOST = "localhost"
 	// PORT post
 	PORT = "8080"
 )
@@ -111,7 +111,7 @@ func (p *PlayerService) GetNewOrders() ([]*player.Order, error) {
 	orders := []*player.Order{}
 	//fmt.Printf("第 %d 回合 | gameState = %v\n", roundCount, gameState)
 
-	fmt.Printf("myTankNum = %d\n", myTankNum)
+	fmt.Printf("myTankNum = %d | myTankList = %v\n", myTankNum, myTankList)
 
 	nextSteps = make([]*player.Position, 0)
 	for i := 0; i < myTankNum; i++ {
@@ -178,6 +178,7 @@ func (p *PlayerService) GetNewOrders() ([]*player.Order, error) {
 		}
 
 		enemyTankPos, myTankPos := getTankListFromGameState()
+		fmt.Printf("敌方坦克位置 = %v | 我放坦克位置 = %v\n", enemyTankPos, myTankPos)
 		fd := shot((int)(pos.X), (int)(pos.Y), gameMapWidth, gameMapWidth, enemyTankPos, myTankPos, nil)
 
 		if fd != 0 {
@@ -197,26 +198,30 @@ func (p *PlayerService) GetNewOrders() ([]*player.Order, error) {
 			break
 		} else {
 			// 第一辆坦克 - 杀手
-			if myTankList[0] != -1 {
+			if myTankList[i] != -1 && i == 0 {
 				if len(enemyTankPos) == 0 {
 					// 扫描草丛
 
 				} else {
+					fmt.Printf("第一辆坦克的目标点 = [%d , %d]\n", enemyTankPos[0].X, enemyTankPos[0].Y)
 					order := moveOrder(pos, &player.Position{X: (int32)(enemyTankPos[0].X), Y: (int32)(enemyTankPos[0].Y)}, myTankList[i], dir)
 					orders = append(orders, order)
 				}
-			} else if myTankList[1] != -1 { // 第二辆坦克 - 夺旗
+			} else if myTankList[i] != -1 && i == 1 { // 第二辆坦克 - 夺旗
+				fmt.Printf("第二辆坦克的目标点 = [%d , %d]\n", (int32)(gameMapCenter)+(int32)(rand.Intn(5)-2), (int32)(gameMapCenter)+(int32)(rand.Intn(5)-2))
 				if (int)(pos.X) == gameMapCenter && (int)(pos.Y) == gameMapCenter {
 					order := moveOrder(pos, &player.Position{X: (int32)(gameMapCenter) + (int32)(rand.Intn(5)-2), Y: (int32)(gameMapCenter) + (int32)(rand.Intn(5)-2)}, myTankList[i], dir)
 					orders = append(orders, order)
 				} else {
+					fmt.Printf("第二辆坦克的目标点 = [%d , %d]\n", (int32)(gameMapCenter), (int32)(gameMapCenter))
 					order := moveOrder(pos, &player.Position{X: (int32)(gameMapCenter), Y: (int32)(gameMapCenter)}, myTankList[i], dir)
 					orders = append(orders, order)
 				}
-			} else if myTankList[2] != -1 { // 第三辆坦克 - 保护
+			} else if myTankList[i] != -1 && i == 2 { // 第三辆坦克 - 保护
+				fmt.Printf("第三辆坦克的目标点 = [%d , %d]\n", (int32)(gameMapCenter)+(int32)(rand.Intn(gameMapWidth)/4-gameMapWidth/8), (int32)(gameMapCenter)+(int32)(rand.Intn(gameMapWidth)/4-gameMapWidth/8))
 				order := moveOrder(pos, &player.Position{X: (int32)(gameMapCenter) + (int32)(rand.Intn(gameMapWidth)/4-gameMapWidth/8), Y: (int32)(gameMapCenter) + (int32)(rand.Intn(gameMapWidth)/4-gameMapWidth/8)}, myTankList[i], dir)
 				orders = append(orders, order)
-			} else if myTankList[3] != -1 { // 第四辆坦克 - 扫描
+			} else if myTankList[i] != -1 && i == 3 { // 第四辆坦克 - 扫描
 
 			}
 		}
@@ -386,13 +391,18 @@ func getDir(tankPos *player.Position, nextStep *astar.Tile, tankDir player.Direc
 }
 
 func getTankListFromGameState() (enemyTankPos, myTankPos []*player.Position) {
-	for i := 0; i < myTankNum; i++ {
-		for j := 0; j < len(gameState.Tanks); j++ {
-			if gameState.Tanks[j].ID == myTankList[i] {
-				myTankPos = append(myTankPos, gameState.Tanks[j].Pos)
-			} else {
-				enemyTankPos = append(enemyTankPos, gameState.Tanks[j].Pos)
+	enemyTankPos = make([]*player.Position, 0)
+	myTankPos = make([]*player.Position, 0)
+	for i := 0; i < len(gameState.Tanks); i++ {
+		isEqual := false
+		for j := 0; j < myTankNum; j++ {
+			if gameState.Tanks[i].ID == myTankList[j] {
+				myTankPos = append(myTankPos, gameState.Tanks[i].Pos)
+				isEqual = true
 			}
+		}
+		if isEqual == false {
+			enemyTankPos = append(enemyTankPos, gameState.Tanks[i].Pos)
 		}
 	}
 	return enemyTankPos, myTankPos
@@ -471,7 +481,7 @@ func shot(x int, y int, width int, height int, enemyTankList []*player.Position,
 	value := scoreArr[0]
 	total := scoreArr[0] + scoreArr[1] + scoreArr[2] + scoreArr[3]
 	for i := 1; i < len(scoreArr); i++ {
-		fmt.Printf(" i = %d scoreArr[i] = %d\n", i, scoreArr[i])
+		// fmt.Printf(" i = %d scoreArr[i] = %d\n", i, scoreArr[i])
 		if scoreArr[i] > value {
 			value = scoreArr[i]
 			index = i
