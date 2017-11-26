@@ -81,6 +81,9 @@ func (p *PlayerService) UploadMap(gamemap [][]int32) error {
 			astarGameMap[i][j] = gamemap[i][j]
 		}
 	}
+
+  // 获取所有草地
+	getAllGrasses()
 	return nil
 }
 
@@ -543,6 +546,7 @@ func getNextEnemyGrass() {
 			enemyCurrentGrass = enemyGrasses[enemyCurrentGrass.next]
 		}
 	}
+	return nil
 }
 
 func getNextMyGrass() *GrassPosition {
@@ -551,6 +555,7 @@ func getNextMyGrass() *GrassPosition {
 	} else {
 		myCurrentGrass = enemyGrasses[myCurrentGrass.next]
 	}
+	return nil
 }
 
 func gotoTheTankInGrass(tank *player.Tank) *player.Order {
@@ -632,7 +637,7 @@ func getAllGrasses() {
 }
 
 func getGrasses(isMine bool, grasses []*GrassPosition) int {
-	start, end := getStartStartAndEnd(isMine)
+	start, end := getStartAndEnd(isMine)
 	grassCount := 0
 	grasses = make([]*GrassPosition, gameMapWidth*gameMapWidth/2.0)
 
