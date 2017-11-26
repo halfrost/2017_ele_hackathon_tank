@@ -13,7 +13,7 @@ import (
 
 const (
 	// HOST host
-	HOST = "localhost"
+	HOST = "0.0.0.0"
 	// PORT post
 	PORT = "80"
 )
