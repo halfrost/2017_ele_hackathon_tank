@@ -82,7 +82,7 @@ func (p *PlayerService) UploadMap(gamemap [][]int32) error {
 		}
 	}
 
-  // 获取所有草地
+	// 获取所有草地
 	getAllGrasses()
 	return nil
 }
@@ -511,7 +511,7 @@ func shot(x int, y int, width int, height int, enemyTankList []*player.Position,
 	return 0
 }
 
-// grass
+// GrassPosition defined grass position
 type GrassPosition struct {
 	fired  bool
 	pos    *player.Position
@@ -519,6 +519,7 @@ type GrassPosition struct {
 	isMine bool
 }
 
+// Range defined range
 type Range struct {
 	start *player.Position
 	end   *player.Position
@@ -546,7 +547,6 @@ func getNextEnemyGrass() {
 			enemyCurrentGrass = enemyGrasses[enemyCurrentGrass.next]
 		}
 	}
-	return nil
 }
 
 func getNextMyGrass() *GrassPosition {
@@ -593,9 +593,8 @@ func moveToGrass(tankID int32, tankPos *player.Position, desPos *player.Position
 
 	if !found {
 		return &player.Order{TankId: tankID, Order: "turnTo", Dir: dir}
-	} else {
-		return &player.Order{TankId: tankID, Order: "move", Dir: dir}
 	}
+	return &player.Order{TankId: tankID, Order: "move", Dir: dir}
 }
 
 // 这是 4 号调用
@@ -688,7 +687,6 @@ func getGrasses(isMine bool, grasses []*GrassPosition) int {
 			}
 		}
 	}
-
 	if grassCount > 0 {
 		grassPos := grasses[grassCount]
 		grassPos.next = 0
@@ -771,6 +769,7 @@ func isGrass(pos *player.Position) bool {
 		}
 		return false
 	}
+	return false
 }
 
 func main() {
