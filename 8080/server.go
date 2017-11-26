@@ -608,18 +608,8 @@ func getGrasses(isMine bool) (int, []*GrassPosition) {
 
 	fmt.Printf("初始化以后 grasses = %v\n", grasses)
 	for i := start.X; ; {
-		if end.X >= start.X {
-			i++
-		} else {
-			i--
-		}
-
 		for j := start.Y; ; {
-			if end.Y >= start.Y {
-				j++
-			} else {
-				j--
-			}
+
 
 			pos := &player.Position{X: i, Y: j}
 			if true == isGrass(pos) {
@@ -637,20 +627,24 @@ func getGrasses(isMine bool) (int, []*GrassPosition) {
 			}
 
 			if end.Y >= start.Y {
+				j++
 				if j > end.Y {
 					break
 				}
 			} else {
+				j--
 				if j < end.Y {
 					break
 				}
 			}
 		}
 		if end.X >= start.X {
+			i++
 			if i > end.X {
 				break
 			}
 		} else {
+			i--
 			if i < end.X {
 				break
 			}
