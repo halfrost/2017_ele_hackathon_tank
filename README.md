@@ -14,7 +14,7 @@
 ## 构建
 
 1. 用 XCode 打开 TankBattle.xcodeproj；
-2. 构建。
+2. 构建。构建命令 GOOS=linux GOARCH=amd64 go build server.go
 
 ## 协议
 
@@ -37,4 +37,3 @@ It includes:
 * Always pass 'ctx context.Context' to every function call.
 * There're lots of generated codes, leave'em be. (filename starts with 'auto-' or there's comment stating not to modify)
 * Golang requires lots of typing, it's normal(compared to python).
-
