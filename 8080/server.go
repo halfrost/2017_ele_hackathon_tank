@@ -219,9 +219,11 @@ func (p *PlayerService) GetNewOrders() ([]*player.Order, error) {
 					order := gotoTheTankInGrass(&player.Tank{ID: myTankList[0], Pos: positon, Dir: direction, Hp: hp})
 					orders = append(orders, order)
 				} else {
-					fmt.Printf("第一辆坦克的目标点 = [%d , %d]\n", enemyTankPos[0].X, enemyTankPos[0].Y)
-					order := moveOrder(pos, &player.Position{X: (int32)(enemyTankPos[0].X), Y: (int32)(enemyTankPos[0].Y)}, myTankList[i], dir)
-					orders = append(orders, order)
+					if myGrassesCount > 0 && enemyGrassesCount > 0 {
+						fmt.Printf("第一辆坦克的目标点 = [%d , %d]\n", enemyTankPos[0].X, enemyTankPos[0].Y)
+						order := moveOrder(pos, &player.Position{X: (int32)(enemyTankPos[0].X), Y: (int32)(enemyTankPos[0].Y)}, myTankList[i], dir)
+						orders = append(orders, order)
+					}
 				}
 			} else if myTankList[i] != -1 && i == 1 { // 第二辆坦克 - 夺旗
 				fmt.Printf("第二辆坦克的目标点 = [%d , %d]\n", (int32)(gameMapCenter)+(int32)(rand.Intn(5)-2), (int32)(gameMapCenter)+(int32)(rand.Intn(5)-2))
@@ -238,9 +240,16 @@ func (p *PlayerService) GetNewOrders() ([]*player.Order, error) {
 				order := moveOrder(pos, &player.Position{X: (int32)(gameMapCenter) + (int32)(rand.Intn(gameMapWidth)/4-gameMapWidth/8), Y: (int32)(gameMapCenter) + (int32)(rand.Intn(gameMapWidth)/4-gameMapWidth/8)}, myTankList[i], dir)
 				orders = append(orders, order)
 			} else if myTankList[i] != -1 && i == 3 { // 第四辆坦克 - 扫描
-				positon, direction, hp := getTankPosDirHp(myTankList[3])
-				order := gotoTheGrassNearbyTheFlag(&player.Tank{ID: myTankList[3], Pos: positon, Dir: direction, Hp: hp})
-				orders = append(orders, order)
+				if 0 == myGrassesCount && 0 == enemyGrassesCount {
+					len(enemyTankPos) > 0 {
+						order := moveOrder(pos, &player.Position{X: (int32)(enemyTankPos[0].X), Y: (int32)(enemyTankPos[0].Y)}, myTankList[i], dir)
+						orders = append(orders, order)
+					}
+				} else {
+					positon, direction, hp := getTankPosDirHp(myTankList[3])
+					order := gotoTheGrassNearbyTheFlag(&player.Tank{ID: myTankList[3], Pos: positon, Dir: direction, Hp: hp})
+					orders = append(orders, order)
+				}
 			}
 		}
 
