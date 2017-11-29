@@ -1,10 +1,6 @@
 package astar
 
-import (
-	"container/heap"
-)
-
-type priorityQueue []*node
+import "container/heap"
 
 // astar is an A* pathfinding implementation.
 
@@ -96,34 +92,4 @@ func Path(from, to Pather) (path []Pather, distance float64, found bool) {
 			}
 		}
 	}
-}
-
-func (pq priorityQueue) Len() int {
-	return len(pq)
-}
-
-func (pq priorityQueue) Less(i, j int) bool {
-	return pq[i].rank < pq[j].rank
-}
-
-func (pq priorityQueue) Swap(i, j int) {
-	pq[i], pq[j] = pq[j], pq[i]
-	pq[i].index = i
-	pq[j].index = j
-}
-
-func (pq *priorityQueue) Push(x interface{}) {
-	n := len(*pq)
-	no := x.(*node)
-	no.index = n
-	*pq = append(*pq, no)
-}
-
-func (pq *priorityQueue) Pop() interface{} {
-	old := *pq
-	n := len(old)
-	no := old[n-1]
-	no.index = -1
-	*pq = old[0 : n-1]
-	return no
 }

@@ -63,7 +63,7 @@ type Tile struct {
 	// Kind is the kind of tile, potentially affecting movement.
 	Kind int
 	// X and Y are the coordinates of the tile.
-	X, Y int32
+	X, Y int
 	// W is a reference to the World that the tile is a part of.
 	W World
 }
@@ -192,7 +192,7 @@ func (w World) RenderPath(path []Pather) string {
 			// 用字符初始化 rows[y] += string(r)
 		}
 	}
-	fmt.Printf("rows = %v", rows)
+	//fmt.Printf("rows = %v", rows)
 	return strings.Join(rows, "\n")
 }
 
@@ -214,7 +214,7 @@ func ParseWorld(input string) World {
 }
 
 // InitWorld by gameMap
-func InitWorld(gameMap [30][30]int32) World {
+func InitWorld(gameMap [50][50]int32) World {
 	w := World{}
 	var kind int
 	for i := 0; i < len(gameMap); i++ {
